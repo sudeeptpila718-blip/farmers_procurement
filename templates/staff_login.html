@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ portal }} Login{% endblock %}
+{% block nav %}
+  <a href="{{ url_for('index') }}">← Back to Login</a>
+{% endblock %}
+
+{% block content %}
+<div class="card login-card">
+  <h2>{{ portal }} Login</h2>
+  <form method="POST" action="{{ action }}">
+    <label>Username</label>
+    <input type="text" name="username" required>
+    <label>Password</label>
+    <input type="password" name="password" required>
+    <button type="submit" class="btn btn-primary btn-block">Login</button>
+  </form>
+  <p class="mini muted" style="margin-top:14px;">
+    Demo credentials — Admin: <code>admin / admin123</code> &nbsp;|&nbsp;
+    Procurement: <code>procurement / procure123</code>
+  </p>
+</div>
+{% endblock %}

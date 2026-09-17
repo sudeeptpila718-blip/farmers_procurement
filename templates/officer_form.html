@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Verification Form — {{ farmer['name'] }}{% endblock %}
+{% block nav %}
+  <a href="{{ url_for('officer_logout') }}">Logout</a>
+{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:760px;margin:0 auto;">
+  <h2>🔍 Land &amp; Document Verification</h2>
+  <p class="muted mini">Officer: <strong>{{ session['officer_name'] }}</strong> — Farmer: <strong>{{ farmer['name'] }}</strong> (App No. {{ farmer['app_no'] }})</p>
+
+  {% if existing and existing['verified'] %}
+    <div class="flash flash-success">This farmer has already been fully verified on {{ existing['verified_at'] }}.</div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('officer_form') }}">
+    {% set checks = [
+      ('name_ok', 'Name', farmer['name']),
+      ('mobile_ok', 'Mobile No.', farmer['mobile']),
+      ('state_ok', 'State', farmer['state']),
+      ('district_ok', 'District', farmer['district']),
+      ('village_ok', 'Village Name', farmer['village']),
+      ('land_ok', 'Land Info', farmer['land_decimal'] ~ ' decimal'),
+      ('aadhar_doc_ok', 'Uploaded Document — Aadhar', farmer['aadhar_doc'] or 'Not uploaded'),
+      ('land_doc_ok', 'Uploaded Document — Land', farmer['land_doc'] or 'Not uploaded'),
+      ('kishan_doc_ok', 'Uploaded Document — Kishan ID', farmer['kishan_doc'] or 'Not uploaded'),
+    ] %}
+
+    {% for field, label, value in checks %}
+      <fieldset>
+        <legend>{{ label }}</legend>
+        <p class="mini">{{ value }}</p>
+        <div class="radio-group">
+          <label><input type="radio" name="{{ field }}" value="ok" {% if existing and existing[field] %}checked{% endif %} required> ✅ OK</label>
+          <label><input type="radio" name="{{ field }}" value="decline" {% if existing and not existing[field] and existing[field] is not none %}checked{% endif %}> ❌ Decline</label>
+        </div>
+      </fieldset>
+    {% endfor %}
+
+    <fieldset>
+      <legend>Preferred Crop</legend>
+      <p class="mini">Which crop is suitable for this land?</p>
+      <select name="preference_crop">
+        {% for c in crops %}
+          <option value="{{ c }}" {% if existing and existing['preference_crop']==c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary btn-block">Submit Verification</button>
+  </form>
+</div>
+{% endblock %}

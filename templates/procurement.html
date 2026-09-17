@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Procurement Center — Farmers Procurement System{% endblock %}
+{% block nav %}
+  <a href="{{ url_for('officer_login') }}" class="pill-highlight">Verification Officers Login</a>
+  <a href="{{ url_for('procurement_logout') }}">Logout</a>
+{% endblock %}
+
+{% block content %}
+<h2>🏭 Procurement Center Dashboard</h2>
+
+<div class="grid grid-4" style="margin-bottom:10px;">
+  <div class="stat-box"><div class="num">{{ stats['total'] }}</div><div class="label">Total Registrations</div></div>
+  <div class="stat-box"><div class="num">{{ farmers|length }}</div><div class="label">Received from Kishan Seva</div></div>
+  <div class="stat-box"><div class="num">{{ stats['pending'] }}</div><div class="label">Pending</div></div>
+  <div class="stat-box"><div class="num">{{ stats['done'] }}</div><div class="label">Completed</div></div>
+  <div class="stat-box"><div class="num">{{ stats['total_land'] }}</div><div class="label">Total Land Registered (decimal)</div></div>
+</div>
+
+<!-- Date & Time options -->
+<div class="section-title"><span class="emoji">🗓️</span> Date &amp; Time Options</div>
+<div class="grid grid-2">
+  <div class="card">
+    <h3>1. Verification Slots (Land Verification)</h3>
+    <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+      <input type="hidden" name="slot_type" value="verification">
+      <div style="flex:1;min-width:140px;"><label>Date</label><input type="date" name="slot_date" required></div>
+      <div style="flex:1;min-width:120px;"><label>Time</label><input type="time" name="slot_time" required></div>
+      <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:14px;">Add Option</button>
+    </form>
+    <div class="slot-options">
+      {% for s in verification_slots %}
+        <span class="slot-chip">{{ s['slot_date'] }} · {{ s['slot_time'] }}</span>
+      {% else %}
+        <span class="muted mini">No slots added yet.</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>2. Social Point Slots (Seed Taking)</h3>
+    <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+      <input type="hidden" name="slot_type" value="seed">
+      <div style="flex:1;min-width:140px;"><label>Date</label><input type="date" name="slot_date" required></div>
+      <div style="flex:1;min-width:120px;"><label>Time</label><input type="time" name="slot_time" required></div>
+      <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:14px;">Add Option</button>
+    </form>
+    <div class="slot-options">
+      {% for s in seed_slots %}
+        <span class="slot-chip">{{ s['slot_date'] }} · {{ s['slot_time'] }}</span>
+      {% else %}
+        <span class="muted mini">No slots added yet.</span>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Farmers registered -->
+<div class="section-title"><span class="emoji">👨‍🌾</span> 1. Farmers Registered</div>
+<div class="table-wrap card">
+  <table>
+    <thead>
+      <tr>
+        <th>App No.</th><th>Name</th><th>Mobile</th><th>State/District</th><th>Village</th>
+        <th>Land Info</th><th>Docs</th><th>Slot Booked</th><th>Status</th><th>Verification Officer</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for f in farmers %}
+      {% set officer = officers_by_farmer.get(f['app_no']) %}
+      {% set slots = my_slots.get(f['app_no'], {}) %}
+      <tr>
+        <td><strong>{{ f['app_no'] }}</strong></td>
+        <td>{{ f['name'] }}</td>
+        <td>{{ f['mobile'] }}</td>
+        <td>{{ f['state'] }} / {{ f['district'] }}</td>
+        <td>{{ f['village'] }}</td>
+        <td>{{ f['has_land'] }} — {{ f['land_decimal'] }} dec</td>
+        <td>
+          {% for label, doc in [('Kishan', f['kishan_doc']), ('Aadhar', f['aadhar_doc']), ('Land', f['land_doc'])] %}
+            {% if doc %}<a class="doc-link" href="{{ url_for('static', filename='uploads/' ~ doc) }}" target="_blank">{{ label }}</a>{% endif %}{% if not loop.last %} · {% endif %}
+          {% endfor %}
+        </td>
+        <td>
+          {% if slots.get('verification') %}Verify: {{ slots['verification']['slot_date'] }} {{ slots['verification']['slot_time'] }}<br>{% endif %}
+          {% if slots.get('seed') %}Seed: {{ slots['seed']['slot_date'] }} {{ slots['seed']['slot_time'] }}{% endif %}
+          {% if not slots.get('verification') and not slots.get('seed') %}<span class="muted mini">—</span>{% endif %}
+        </td>
+        <td>
+          <span class="badge
+            {% if f['status']=='Procurement Centre' %}badge-procurement
+            {% elif f['status']=='Verification Officer Assigned' %}badge-verify
+            {% elif f['status']=='Verified' %}badge-verified
+            {% elif f['status']=='Social Point Assigned' %}badge-social
+            {% elif f['status']=='Completed' %}badge-completed
+            {% else %}badge-app{% endif %}">{{ f['status'] }}</span>
+        </td>
+        <td>
+          {% if officer %}
+            <div class="mini">{{ officer['officer_name'] }} · {{ officer['officer_contact'] }}</div>
+            <span class="badge badge-verified">Confirmed</span>
+          {% else %}
+            <form method="POST" action="{{ url_for('assign_officer', app_no=f['app_no']) }}" style="min-width:180px;">
+              <input type="text" name="officer_name" placeholder="Officer name" required style="margin-bottom:6px;">
+              <input type="text" name="officer_contact" placeholder="Officer contact" required style="margin-bottom:6px;">
+              <button type="submit" class="btn btn-primary btn-sm btn-block">Confirm Assignment</button>
+            </form>
+          {% endif %}
+
+          {% if f['status'] == 'Verified' %}
+            <form method="POST" action="{{ url_for('assign_social_point', app_no=f['app_no']) }}" style="margin-top:8px;">
+              <button type="submit" class="btn btn-wheat btn-sm btn-block">Assign Social Point</button>
+            </form>
+          {% endif %}
+
+          {% if f['status'] in ['Social Point Assigned'] and slots.get('seed') %}
+            <details style="margin-top:8px;">
+              <summary class="mini" style="cursor:pointer;color:var(--green-700);">Update Harvesting</summary>
+              <form method="POST" action="{{ url_for('harvest_update', app_no=f['app_no']) }}" style="margin-top:6px;">
+                <input type="text" name="quantity" placeholder="Quantity" style="margin-bottom:6px;">
+                <input type="text" name="quality" placeholder="Quality" style="margin-bottom:6px;">
+                <input type="text" name="amount" placeholder="Amount (₹)" style="margin-bottom:6px;">
+                <select name="status" style="margin-bottom:6px;">
+                  <option value="Pending">Pending</option>
+                  <option value="Transferred">Transferred</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm btn-block">Save</button>
+              </form>
+            </details>
+          {% endif %}
+        </td>
+      </tr>
+      {% else %}
+      <tr><td colspan="10" class="center muted">No farmers received from Kishan Seva yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

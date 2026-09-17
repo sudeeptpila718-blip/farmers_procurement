@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Login — Farmers Procurement System{% endblock %}
+{% block nav %}
+  <a href="{{ url_for('admin_login') }}">Admin</a>
+  <a href="{{ url_for('procurement_login') }}">Procurement Center</a>
+  <a href="{{ url_for('officer_login') }}">Verification Officer</a>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <h1>🌱 Welcome to the Farmers Procurement System</h1>
+  <p>Register your land, get verified, book your slots and follow your crop from field to procurement — all in one place.</p>
+</div>
+
+<div class="card login-card">
+  <h2>Farmer Login</h2>
+  <form method="POST" action="{{ url_for('farmer_login') }}">
+    <label for="name">Name</label>
+    <input type="text" id="name" name="name" placeholder="Your full name" required>
+
+    <label for="mobile">Mobile Number (used as password)</label>
+    <input type="tel" id="mobile" name="mobile" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+
+    <button type="submit" class="btn btn-primary btn-block">Login to Dashboard</button>
+  </form>
+
+  <div class="divider">New here?</div>
+
+  <a href="{{ url_for('register') }}" class="btn btn-wheat btn-block">＋ New Farmer Registration</a>
+</div>
+{% endblock %}

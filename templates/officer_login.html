@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Verification Officer Login{% endblock %}
+{% block nav %}
+  <a href="{{ url_for('index') }}">← Back to Login</a>
+{% endblock %}
+
+{% block content %}
+<div class="card login-card">
+  <h2>🧑‍💼 Verification Officer Login</h2>
+  <form method="POST" action="{{ url_for('officer_login') }}">
+    <label>User ID (your officer name, as assigned by Procurement Center)</label>
+    <input type="text" name="username" required>
+    <label>Password (name of the farmer you are visiting)</label>
+    <input type="password" name="password" required>
+    <button type="submit" class="btn btn-primary btn-block">Login</button>
+  </form>
+  <p class="mini muted" style="margin-top:14px;">You'll only be able to log in once the Procurement Center has assigned you to a farmer for verification.</p>
+</div>
+{% endblock %}
