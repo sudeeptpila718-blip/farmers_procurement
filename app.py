@@ -21,12 +21,9 @@ app.secret_key = "farmers-procurement-secret-key-change-me"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Fixed demo credentials for staff logins (in a real system use hashed
-# passwords + a users table)
 ADMIN_USER = {"username": "admin", "password": "admin123"}
 PROCUREMENT_USER = {"username": "procurement", "password": "procure123"}
 
-# Small demo State -> District map used for the dependent dropdown
 STATE_DISTRICTS = {
     "West Bengal": ["Kolkata", "Howrah", "Nadia", "Murshidabad", "Bardhaman", "Malda"],
     "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga"],
@@ -49,9 +46,6 @@ STATUS_STEPS = [
 CROPS = ["Rice", "Wheat", "Maize", "Sugarcane", "Jute", "Potato", "Mustard", "Pulses"]
 
 
-# --------------------------------------------------------------------------
-# Database helpers
-# --------------------------------------------------------------------------
 def get_db():
     if "db" not in g:
         g.db = sqlite3.connect(DB_PATH)
@@ -93,7 +87,8 @@ def init_db():
             ifsc TEXT,
             bank_name TEXT,
             status TEXT DEFAULT 'Kishan Seva Kendra',
-            created_at TEXT
+            created_at TEXT,
+            transferred_at TEXT
         );
 
         CREATE TABLE IF NOT EXISTS officers (
@@ -156,9 +151,13 @@ def init_db():
         );
         """
     )
-    db.commit()
+    # Ensure transferred_at column exists if table already existed
+    try:
+        db.execute("ALTER TABLE farmers ADD COLUMN transferred_at TEXT")
+        db.commit()
+    except sqlite3.OperationalError:
+        pass
 
-    # Seed a little demo analytics data + a couple of slot options if empty
     cur = db.execute("SELECT COUNT(*) c FROM slot_options")
     if cur.fetchone()["c"] == 0:
         demo_slots = [
@@ -177,7 +176,6 @@ def init_db():
 
 
 def gen_app_no(db):
-    """Generate a unique 4-digit application number."""
     for _ in range(50):
         code = "".join(random.choices(string.digits, k=4))
         row = db.execute("SELECT 1 FROM farmers WHERE app_no=?", (code,)).fetchone()
@@ -201,7 +199,6 @@ def save_upload(file_storage, prefix):
 
 
 def stats_for(db, min_status_index=0):
-    """Overall registration stats used on Admin / Procurement pages."""
     total = db.execute("SELECT COUNT(*) c FROM farmers").fetchone()["c"]
     pending = db.execute(
         "SELECT COUNT(*) c FROM farmers WHERE status NOT IN ('Completed','Declined')"
@@ -221,13 +218,6 @@ def stats_for(db, min_status_index=0):
     }
 
 
-def farmer_dict(row):
-    return dict(row) if row else None
-
-
-# --------------------------------------------------------------------------
-# Auth guards
-# --------------------------------------------------------------------------
 def farmer_login_required(f):
     @wraps(f)
     def wrapper(*a, **kw):
@@ -264,9 +254,6 @@ def officer_login_required(f):
     return wrapper
 
 
-# --------------------------------------------------------------------------
-# Public / Farmer routes
-# --------------------------------------------------------------------------
 @app.route("/")
 def index():
     if session.get("farmer_app_no"):
@@ -386,7 +373,6 @@ def dashboard():
     ).fetchall()
 
     just_registered = session.pop("just_registered", False)
-
     status_index = STATUS_STEPS.index(farmer["status"]) if farmer["status"] in STATUS_STEPS else 0
 
     return render_template(
@@ -453,9 +439,6 @@ def plowing_submit():
     return redirect(url_for("dashboard"))
 
 
-# --------------------------------------------------------------------------
-# Admin webpage (Kishan Seva Kendra)
-# --------------------------------------------------------------------------
 @app.route("/admin/login", methods=["GET", "POST"])
 def admin_login():
     if request.method == "GET":
@@ -478,14 +461,12 @@ def admin_logout():
 @admin_login_required
 def admin():
     db = get_db()
-    # Stays visible in the active table until completely processed or declined
     active_farmers = db.execute(
         """SELECT * FROM farmers 
            WHERE status NOT IN ('Completed', 'Declined') 
            ORDER BY created_at DESC"""
     ).fetchall()
     
-    # Complete log for the dedicated History modal
     all_history = db.execute(
         "SELECT * FROM farmers ORDER BY created_at DESC"
     ).fetchall()
@@ -508,7 +489,11 @@ def admin_decide(app_no):
     db = get_db()
     decision = request.form.get("decision")
     if decision == "transfer":
-        db.execute("UPDATE farmers SET status='Procurement Centre' WHERE app_no=?", (app_no,))
+        now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+        db.execute(
+            "UPDATE farmers SET status='Procurement Centre', transferred_at=? WHERE app_no=?",
+            (now_str, app_no)
+        )
         flash(f"Farmer {app_no} transferred to Procurement Centre (Kishan Seva confirmed).", "success")
     elif decision == "decline":
         db.execute("UPDATE farmers SET status='Declined' WHERE app_no=?", (app_no,))
@@ -517,9 +502,6 @@ def admin_decide(app_no):
     return redirect(url_for("admin"))
 
 
-# --------------------------------------------------------------------------
-# Procurement Center webpage
-# --------------------------------------------------------------------------
 @app.route("/procurement/login", methods=["GET", "POST"])
 def procurement_login():
     if request.method == "GET":
@@ -564,6 +546,23 @@ def procurement():
     seed_slots = db.execute(
         "SELECT * FROM slot_options WHERE slot_type='seed' ORDER BY slot_date, slot_time"
     ).fetchall()
+
+    now = datetime.now()
+    four_days_passed = {}
+    pending_farmers = []
+    for f in farmers:
+        app_no = f["app_no"]
+        t_at = f["transferred_at"] or f["created_at"]
+        try:
+            dt = datetime.strptime(t_at, "%Y-%m-%d %H:%M")
+            is_past = (now - dt).total_seconds() >= (4 * 86400)
+        except Exception:
+            is_past = False
+        four_days_passed[app_no] = is_past
+
+        if f["status"] != "Completed":
+            pending_farmers.append(f)
+
     return render_template(
         "procurement.html",
         farmers=farmers,
@@ -572,7 +571,28 @@ def procurement():
         stats=stats,
         verification_slots=verification_slots,
         seed_slots=seed_slots,
+        four_days_passed=four_days_passed,
+        pending_farmers=pending_farmers,
     )
+
+
+@app.route("/procurement/force-slot/<app_no>", methods=["POST"])
+@procurement_login_required
+def procurement_force_slot(app_no):
+    db = get_db()
+    slot_date = request.form.get("slot_date")
+    slot_time = request.form.get("slot_time")
+    if slot_date and slot_time:
+        db.execute(
+            """INSERT INTO farmer_slots (farmer_app_no, slot_type, slot_date, slot_time)
+               VALUES (?, 'verification', ?, ?)
+               ON CONFLICT(farmer_app_no, slot_type)
+               DO UPDATE SET slot_date=excluded.slot_date, slot_time=excluded.slot_time""",
+            (app_no, slot_date, slot_time),
+        )
+        db.commit()
+        flash(f"Verification date & time assigned for farmer {app_no}.", "success")
+    return redirect(url_for("procurement"))
 
 
 @app.route("/procurement/assign-officer/<app_no>", methods=["POST"])
@@ -644,16 +664,13 @@ def harvest_update(app_no):
     return redirect(url_for("procurement"))
 
 
-# --------------------------------------------------------------------------
-# Verification Officer login + form
-# --------------------------------------------------------------------------
 @app.route("/officer/login", methods=["GET", "POST"])
 def officer_login():
     if request.method == "GET":
         return render_template("officer_login.html")
     db = get_db()
-    username = request.form.get("username", "").strip()  # officer name
-    password = request.form.get("password", "").strip()  # farmer name
+    username = request.form.get("username", "").strip()
+    password = request.form.get("password", "").strip()
 
     row = db.execute(
         """SELECT o.*, f.app_no as f_app_no, f.name as f_name
@@ -726,15 +743,11 @@ def officer_form():
     return render_template("officer_form.html", farmer=farmer, existing=existing, crops=CROPS)
 
 
-# --------------------------------------------------------------------------
-# Small JSON API used by the registration form's dependent State/District select
-# --------------------------------------------------------------------------
 @app.route("/api/districts/<state>")
 def api_districts(state):
     return jsonify(STATE_DISTRICTS.get(state, []))
 
 
-# --------------------------------------------------------------------------
 if __name__ == "__main__":
     init_db()
     app.run(debug=True, host="0.0.0.0", port=5000)

@@ -11,7 +11,13 @@
 <div class="grid grid-4" style="margin-bottom:10px;">
   <div class="stat-box"><div class="num">{{ stats['total'] }}</div><div class="label">Total Registrations</div></div>
   <div class="stat-box"><div class="num">{{ farmers|length }}</div><div class="label">Received from Kishan Seva</div></div>
-  <div class="stat-box"><div class="num">{{ stats['pending'] }}</div><div class="label">Pending</div></div>
+  
+  <!-- Clickable Pending Stat Box -->
+  <div class="stat-box" onclick="openPendingModal()" style="cursor:pointer; border: 2px solid var(--wheat); transition: transform 0.15s ease;" title="Click to view pending applications">
+    <div class="num" style="color:var(--earth-700);">{{ stats['pending'] }}</div>
+    <div class="label"><strong>⏳ Pending (Click to View)</strong></div>
+  </div>
+
   <div class="stat-box"><div class="num">{{ stats['done'] }}</div><div class="label">Completed</div></div>
   <div class="stat-box"><div class="num">{{ stats['total_land'] }}</div><div class="label">Total Land Registered (decimal)</div></div>
 </div>
@@ -68,6 +74,9 @@
       {% for f in farmers %}
       {% set officer = officers_by_farmer.get(f['app_no']) %}
       {% set slots = my_slots.get(f['app_no'], {}) %}
+      {% set has_verify_slot = slots.get('verification') is not none %}
+      {% set is_expired = four_days_passed.get(f['app_no'], False) %}
+
       <tr>
         <td><strong>{{ f['app_no'] }}</strong></td>
         <td>{{ f['name'] }}</td>
@@ -81,9 +90,15 @@
           {% endfor %}
         </td>
         <td>
-          {% if slots.get('verification') %}Verify: {{ slots['verification']['slot_date'] }} {{ slots['verification']['slot_time'] }}<br>{% endif %}
-          {% if slots.get('seed') %}Seed: {{ slots['seed']['slot_date'] }} {{ slots['seed']['slot_time'] }}{% endif %}
-          {% if not slots.get('verification') and not slots.get('seed') %}<span class="muted mini">—</span>{% endif %}
+          {% if has_verify_slot %}
+            Verify: <strong>{{ slots['verification']['slot_date'] }} {{ slots['verification']['slot_time'] }}</strong><br>
+          {% endif %}
+          {% if slots.get('seed') %}
+            Seed: <strong>{{ slots['seed']['slot_date'] }} {{ slots['seed']['slot_time'] }}</strong>
+          {% endif %}
+          {% if not has_verify_slot and not slots.get('seed') %}
+            <span class="muted mini">No Slot Booked</span>
+          {% endif %}
         </td>
         <td>
           <span class="badge
@@ -96,14 +111,32 @@
         </td>
         <td>
           {% if officer %}
-            <div class="mini">{{ officer['officer_name'] }} · {{ officer['officer_contact'] }}</div>
-            <span class="badge badge-verified">Confirmed</span>
-          {% else %}
+            <div class="mini"><strong>{{ officer['officer_name'] }}</strong></div>
+            <div class="mini muted">{{ officer['officer_contact'] }}</div>
+            <span class="badge badge-verified" style="margin-top:4px;">Confirmed</span>
+
+          {% elif has_verify_slot %}
+            <!-- Condition 1: Farmer booked slot. Officer assignment is enabled -->
             <form method="POST" action="{{ url_for('assign_officer', app_no=f['app_no']) }}" style="min-width:180px;">
               <input type="text" name="officer_name" placeholder="Officer name" required style="margin-bottom:6px;">
               <input type="text" name="officer_contact" placeholder="Officer contact" required style="margin-bottom:6px;">
               <button type="submit" class="btn btn-primary btn-sm btn-block">Confirm Assignment</button>
             </form>
+
+          {% elif is_expired %}
+            <!-- Condition 2: 4 days passed without booking. Center gives Date & Time -->
+            <div class="mini" style="color:var(--danger);margin-bottom:6px;"><strong>4 days passed without booking.</strong> Set date &amp; time:</div>
+            <form method="POST" action="{{ url_for('procurement_force_slot', app_no=f['app_no']) }}" style="min-width:180px;">
+              <input type="date" name="slot_date" required style="margin-bottom:6px;">
+              <input type="time" name="slot_time" required style="margin-bottom:6px;">
+              <button type="submit" class="btn btn-wheat btn-sm btn-block">Set Slot &amp; Enable Officer</button>
+            </form>
+
+          {% else %}
+            <!-- Locked state -->
+            <div class="mini muted" style="padding:6px 8px; background:#f5f5f5; border-radius:6px; border:1px dashed #d1d5db;">
+              🔒 Officer assignment locked.<br>Waiting for farmer to book slot (or 4-day period to lapse).
+            </div>
           {% endif %}
 
           {% if f['status'] == 'Verified' %}
@@ -135,4 +168,80 @@
     </tbody>
   </table>
 </div>
+
+<!-- Pending Applications Modal -->
+<div id="pendingModal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.55); overflow-y:auto;">
+  <div class="card" style="max-width:960px; margin:40px auto; background:#fff; border-radius:8px; padding:20px; position:relative;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+      <h3 style="margin:0;">⏳ Pending Applications in Procurement Cycle</h3>
+      <button type="button" class="btn btn-danger btn-sm" onclick="closePendingModal()">✕ Close</button>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>App No.</th>
+            <th>Name</th>
+            <th>Mobile</th>
+            <th>State / District</th>
+            <th>Slot Status</th>
+            <th>Current Stage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in pending_farmers %}
+          {% set p_slots = my_slots.get(p['app_no'], {}) %}
+          <tr>
+            <td><strong>{{ p['app_no'] }}</strong></td>
+            <td>{{ p['name'] }}</td>
+            <td>{{ p['mobile'] }}</td>
+            <td>{{ p['state'] }} / {{ p['district'] }}</td>
+            <td>
+              {% if p_slots.get('verification') %}
+                <span class="badge badge-verified">Verification Slot Booked</span>
+              {% elif four_days_passed.get(p['app_no'], False) %}
+                <span class="badge badge-declined">4 Days Passed (Unbooked)</span>
+              {% else %}
+                <span class="badge badge-verify">Awaiting Farmer Booking</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge 
+                {% if p['status'] == 'Procurement Centre' %}badge-procurement
+                {% elif p['status'] == 'Verification Officer Assigned' %}badge-verify
+                {% elif p['status'] == 'Verified' %}badge-verified
+                {% elif p['status'] == 'Social Point Assigned' %}badge-social
+                {% else %}badge-app{% endif %}">
+                {{ p['status'] }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="center muted">No pending applications at this time.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function openPendingModal() {
+  document.getElementById('pendingModal').style.display = 'block';
+}
+
+function closePendingModal() {
+  document.getElementById('pendingModal').style.display = 'none';
+}
+
+window.onclick = function(event) {
+  const pModal = document.getElementById('pendingModal');
+  if (event.target === pModal) {
+    pModal.style.display = 'none';
+  }
+};
+</script>
 {% endblock %}
