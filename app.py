@@ -2,8 +2,10 @@ import os
 import sqlite3
 import random
 import string
+import re
 from datetime import datetime
 from functools import wraps
+from jinja2 import ChoiceLoader, FileSystemLoader, DictLoader
 
 from flask import (
     Flask, render_template, request, redirect, url_for,
@@ -16,10 +18,134 @@ DB_PATH = os.path.join(BASE_DIR, "farmers.db")
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_EXT = {"png", "jpg", "jpeg", "pdf", "gif", "webp"}
 
+ADMIN_TEMPLATE_HTML = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kishan Seva Kendra - Admin Portal</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8fafc; margin: 0; padding: 24px; color: #1e293b; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #fff; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .stat-val { font-size: 24px; font-weight: bold; color: #16a34a; }
+        .stat-label { font-size: 14px; color: #64748b; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 32px; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background: #f1f5f9; font-weight: 600; color: #475569; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; background: #e0f2fe; color: #0369a1; }
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; text-decoration: none; }
+        .btn-green { background: #16a34a; color: #fff; }
+        .btn-red { background: #dc2626; color: #fff; }
+        .btn-logout { background: #64748b; color: #fff; }
+        .flash { padding: 12px; background: #dcfce7; color: #166534; border-radius: 6px; margin-bottom: 16px; }
+        .flash.error { background: #fee2e2; color: #991b1b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Kishan Seva Kendra (Admin Portal)</h2>
+            <a href="{{ url_for('admin_logout') }}" class="btn btn-logout">Logout</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="flash {{ category }}">{{ msg }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-val">{{ stats.total }}</div><div class="stat-label">Total Registrations</div></div>
+            <div class="stat-card"><div class="stat-val">{{ stats.pending }}</div><div class="stat-label">Pending Verifications</div></div>
+            <div class="stat-card"><div class="stat-val">{{ stats.done }}</div><div class="stat-label">Completed</div></div>
+            <div class="stat-card"><div class="stat-val">{{ stats.total_land }}</div><div class="stat-label">Total Land (Decimals)</div></div>
+        </div>
+
+        <h3>Active Registrations</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>App No</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in farmers %}
+                <tr>
+                    <td><b>{{ f.app_no }}</b></td>
+                    <td>{{ f.name }}</td>
+                    <td>{{ f.mobile }}</td>
+                    <td>{{ f.district }}, {{ f.state }}</td>
+                    <td><span class="badge">{{ f.status }}</span></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin_decide', app_no=f.app_no) }}" style="display:inline;">
+                            <input type="hidden" name="decision" value="transfer">
+                            <button type="submit" class="btn btn-green">Transfer</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('admin_decide', app_no=f.app_no) }}" style="display:inline;">
+                            <input type="hidden" name="decision" value="decline">
+                            <button type="submit" class="btn btn-red">Decline</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="6" style="text-align: center; color: #94a3b8;">No active registrations pending.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Registration History</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>App No</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Created At</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in history %}
+                <tr>
+                    <td>{{ h.app_no }}</td>
+                    <td>{{ h.name }}</td>
+                    <td>{{ h.mobile }}</td>
+                    <td>{{ h.created_at }}</td>
+                    <td><span class="badge">{{ h.status }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+"""
+
 app = Flask(__name__)
 app.secret_key = "farmers-procurement-secret-key-change-me"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(os.path.join(BASE_DIR, "templates")),
+    DictLoader({"admin.html": ADMIN_TEMPLATE_HTML})
+])
+
+def regex_search(value, pattern):
+    match = re.search(pattern, str(value or ''))
+    return match.group(0) if match else ''
+
+app.jinja_env.filters['regex_search'] = regex_search
 
 ADMIN_USER = {"username": "admin", "password": "admin123"}
 PROCUREMENT_USER = {"username": "procurement", "password": "procure123"}
@@ -134,6 +260,18 @@ def init_db():
             quantity_approx TEXT
         );
 
+        CREATE TABLE IF NOT EXISTS seed_giving (
+            farmer_app_no TEXT PRIMARY KEY,
+            crop_name TEXT,
+            approx_quantity TEXT,
+            seed_amount_kg REAL,
+            price REAL,
+            payment_mode TEXT,
+            given_at TEXT,
+            status TEXT DEFAULT 'Completed',
+            FOREIGN KEY(farmer_app_no) REFERENCES farmers(app_no)
+        );
+
         CREATE TABLE IF NOT EXISTS harvesting (
             farmer_app_no TEXT PRIMARY KEY,
             quantity TEXT,
@@ -151,7 +289,6 @@ def init_db():
         );
         """
     )
-    # Ensure transferred_at column exists if table already existed
     try:
         db.execute("ALTER TABLE farmers ADD COLUMN transferred_at TEXT")
         db.commit()
@@ -209,12 +346,27 @@ def stats_for(db, min_status_index=0):
     land_row = db.execute(
         "SELECT COALESCE(SUM(land_decimal),0) s FROM farmers WHERE has_land='Yes'"
     ).fetchone()
+
+    collected_row = db.execute("SELECT COALESCE(SUM(price), 0) s FROM seed_giving").fetchone()
+    money_collected = round(collected_row["s"] or 0, 2)
+
+    harvest_rows = db.execute("SELECT amount FROM harvesting").fetchall()
+    money_given = 0.0
+    for hr in harvest_rows:
+        try:
+            val = float(re.sub(r"[^\d.]", "", hr["amount"] or "0"))
+            money_given += val
+        except ValueError:
+            pass
+
     return {
         "total": total,
         "registration_done": total,
         "pending": pending,
         "done": done,
         "total_land": round(land_row["s"] or 0, 2),
+        "money_collected": round(money_collected, 2),
+        "money_given": round(money_given, 2),
     }
 
 
@@ -366,6 +518,7 @@ def dashboard():
         "SELECT * FROM slot_options WHERE slot_type='seed' ORDER BY slot_date, slot_time"
     ).fetchall()
     plowing = db.execute("SELECT * FROM plowing WHERE farmer_app_no=?", (app_no,)).fetchone()
+    seed_giving = db.execute("SELECT * FROM seed_giving WHERE farmer_app_no=?", (app_no,)).fetchone()
     harvesting = db.execute("SELECT * FROM harvesting WHERE farmer_app_no=?", (app_no,)).fetchone()
     analytics = db.execute(
         "SELECT season, crop, quantity FROM crop_analytics WHERE farmer_app_no=? ORDER BY id",
@@ -384,6 +537,7 @@ def dashboard():
         verification_slot_options=verification_slot_options,
         seed_slot_options=seed_slot_options,
         plowing=plowing,
+        seed_giving=seed_giving,
         harvesting=harvesting,
         analytics=analytics,
         status_steps=STATUS_STEPS,
@@ -524,10 +678,11 @@ def procurement_logout():
 @procurement_login_required
 def procurement():
     db = get_db()
+    # Active farmers table excludes fully completed ones so they only show in History
     farmers = db.execute(
         """SELECT * FROM farmers
            WHERE status IN ('Procurement Centre','Verification Officer Assigned',
-                             'Verified','Social Point Assigned','Completed')
+                             'Verified','Social Point Assigned')
            ORDER BY created_at DESC"""
     ).fetchall()
     officers_by_farmer = {
@@ -539,6 +694,23 @@ def procurement():
     my_slots = {}
     for r in db.execute("SELECT * FROM farmer_slots"):
         my_slots.setdefault(r["farmer_app_no"], {})[r["slot_type"]] = r
+
+    verifications = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM verification_results")}
+    plowing_records = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM plowing")}
+    harvesting_records = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM harvesting")}
+    seed_records = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM seed_giving")}
+
+    # Count of unfulfilled seed allocations
+    seed_count_row = db.execute(
+        """SELECT COUNT(DISTINCT f.app_no) as c
+           FROM farmers f
+           JOIN farmer_slots s ON f.app_no = s.farmer_app_no AND s.slot_type = 'seed'
+           JOIN plowing p ON f.app_no = p.farmer_app_no
+           LEFT JOIN seed_giving sg ON f.app_no = sg.farmer_app_no
+           WHERE f.status != 'Declined' AND sg.farmer_app_no IS NULL"""
+    ).fetchone()
+    seed_booked_count = seed_count_row["c"] if seed_count_row else 0
+
     stats = stats_for(db)
     verification_slots = db.execute(
         "SELECT * FROM slot_options WHERE slot_type='verification' ORDER BY slot_date, slot_time"
@@ -568,12 +740,109 @@ def procurement():
         farmers=farmers,
         officers_by_farmer=officers_by_farmer,
         my_slots=my_slots,
+        verifications=verifications,
+        plowing_records=plowing_records,
+        harvesting_records=harvesting_records,
+        seed_records=seed_records,
+        seed_booked_count=seed_booked_count,
         stats=stats,
         verification_slots=verification_slots,
         seed_slots=seed_slots,
         four_days_passed=four_days_passed,
         pending_farmers=pending_farmers,
     )
+
+
+@app.route("/api/procurement/farmer-details/<app_no>")
+@procurement_login_required
+def api_farmer_details(app_no):
+    db = get_db()
+    farmer = db.execute("SELECT * FROM farmers WHERE app_no=?", (app_no,)).fetchone()
+    if not farmer:
+        return jsonify({"success": False, "error": "Farmer not found with that Application Number."})
+
+    officer = db.execute("SELECT * FROM officers WHERE farmer_app_no=? ORDER BY id DESC LIMIT 1", (app_no,)).fetchone()
+    verification = db.execute("SELECT * FROM verification_results WHERE farmer_app_no=?", (app_no,)).fetchone()
+    plowing = db.execute("SELECT * FROM plowing WHERE farmer_app_no=?", (app_no,)).fetchone()
+    seed_giving = db.execute("SELECT * FROM seed_giving WHERE farmer_app_no=?", (app_no,)).fetchone()
+    harvesting = db.execute("SELECT * FROM harvesting WHERE farmer_app_no=?", (app_no,)).fetchone()
+    slots = {
+        r["slot_type"]: f"{r['slot_date']} at {r['slot_time']}"
+        for r in db.execute("SELECT * FROM farmer_slots WHERE farmer_app_no=?", (app_no,)).fetchall()
+    }
+
+    # Suggested seed amount based on plowing
+    auto_seed_kg = 50.0
+    if plowing and plowing["quantity_approx"]:
+        digits = re.findall(r"\d+", plowing["quantity_approx"])
+        if digits:
+            auto_seed_kg = round(float(digits[0]) * 0.05, 2)
+
+    return jsonify({
+        "success": True,
+        "farmer": {
+            "app_no": farmer["app_no"],
+            "name": farmer["name"],
+            "mobile": farmer["mobile"],
+            "aadhar": "[Aadhaar on File]",
+            "kishan_id": farmer["kishan_id"] or "—",
+            "state": farmer["state"],
+            "district": farmer["district"],
+            "village": farmer["village"],
+            "panchayat": farmer["panchayat"],
+            "has_land": farmer["has_land"],
+            "land_type": farmer["land_type"],
+            "land_decimal": farmer["land_decimal"],
+            "status": farmer["status"],
+            "created_at": farmer["created_at"],
+        },
+        "officer": dict(officer) if officer else None,
+        "verification": dict(verification) if verification else None,
+        "plowing": dict(plowing) if plowing else None,
+        "seed_giving": dict(seed_giving) if seed_giving else None,
+        "harvesting": dict(harvesting) if harvesting else None,
+        "slots": slots,
+        "auto_seed_kg": auto_seed_kg,
+    })
+
+
+@app.route("/procurement/seed-giving-save/<app_no>", methods=["POST"])
+@procurement_login_required
+def seed_giving_save(app_no):
+    db = get_db()
+    seed_amount_kg = request.form.get("seed_amount_kg", "0").strip()
+    price = request.form.get("price", "0").strip()
+    payment_mode = request.form.get("payment_mode", "Cash")
+
+    plow = db.execute("SELECT crop_name, quantity_approx FROM plowing WHERE farmer_app_no=?", (app_no,)).fetchone()
+    crop_name = plow["crop_name"] if plow else ""
+    approx_qty = plow["quantity_approx"] if plow else ""
+
+    db.execute(
+        """INSERT INTO seed_giving 
+           (farmer_app_no, crop_name, approx_quantity, seed_amount_kg, price, payment_mode, given_at, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'Completed')
+           ON CONFLICT(farmer_app_no) DO UPDATE SET
+             crop_name=excluded.crop_name,
+             approx_quantity=excluded.approx_quantity,
+             seed_amount_kg=excluded.seed_amount_kg,
+             price=excluded.price,
+             payment_mode=excluded.payment_mode,
+             given_at=excluded.given_at,
+             status='Completed'""",
+        (
+            app_no,
+            crop_name,
+            approx_qty,
+            float(seed_amount_kg or 0),
+            float(price or 0),
+            payment_mode,
+            datetime.now().strftime("%Y-%m-%d %H:%M"),
+        ),
+    )
+    db.commit()
+    flash(f"Seed Giving details saved for Application {app_no}. Process marked completed.", "success")
+    return redirect(url_for("procurement"))
 
 
 @app.route("/procurement/force-slot/<app_no>", methods=["POST"])
@@ -639,28 +908,27 @@ def assign_social_point(app_no):
     return redirect(url_for("procurement"))
 
 
-@app.route("/procurement/harvest/<app_no>", methods=["POST"])
+@app.route("/procurement/harvest-save", methods=["POST"])
 @procurement_login_required
-def harvest_update(app_no):
+def harvest_save():
     db = get_db()
+    app_no = request.form.get("farmer_app_no", "").strip()
+    quantity = request.form.get("quantity", "").strip()
+    quality = request.form.get("quality", "").strip()
+    amount = request.form.get("amount", "").strip()
+
     db.execute(
         """INSERT INTO harvesting (farmer_app_no, quantity, quality, amount, status)
-           VALUES (?,?,?,?,?)
+           VALUES (?,?,?,?, 'Transferred')
            ON CONFLICT(farmer_app_no) DO UPDATE SET
              quantity=excluded.quantity, quality=excluded.quality,
-             amount=excluded.amount, status=excluded.status""",
-        (
-            app_no,
-            request.form.get("quantity", ""),
-            request.form.get("quality", ""),
-            request.form.get("amount", ""),
-            request.form.get("status", "Pending"),
-        ),
+             amount=excluded.amount, status='Transferred'""",
+        (app_no, quantity, quality, amount),
     )
-    if request.form.get("status") == "Transferred":
-        db.execute("UPDATE farmers SET status='Completed' WHERE app_no=?", (app_no,))
+    # Complete the whole cycle and move exclusively to history
+    db.execute("UPDATE farmers SET status='Completed' WHERE app_no=?", (app_no,))
     db.commit()
-    flash(f"Harvesting info updated for {app_no}.", "success")
+    flash(f"Harvest information saved for Farmer {app_no}. Process completed and moved to History.", "success")
     return redirect(url_for("procurement"))
 
 

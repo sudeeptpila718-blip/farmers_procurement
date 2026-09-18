@@ -2,7 +2,6 @@
 {% block title %}<span data-i18n="dashboard_title">Dashboard</span> — {{ farmer['name'] }}{% endblock %}
 
 {% block nav %}
-  <!-- Language Selector Dropdown -->
   <div class="lang-selector-wrap" style="display:inline-block;margin-right:12px;">
     <select id="langSelect" onchange="changeLanguage(this.value)" style="padding:4px 8px;border-radius:4px;font-size:13px;">
       <option value="en">English</option>
@@ -63,7 +62,6 @@
 <div class="card">
   <h3 data-i18n="booking_slots">Booking Slots</h3>
   <div class="grid grid-2">
-    <!-- Land Verification Slot -->
     <div class="icon-tile {% if farmer['status'] in ['Procurement Centre','Verification Officer Assigned','Verified','Social Point Assigned','Completed'] %}unlocked{% else %}locked{% endif %}">
       <div class="big-emoji">🧑‍🌾</div>
       <h4 data-i18n="land_verification">Land Verification</h4>
@@ -90,7 +88,6 @@
       {% endif %}
     </div>
 
-    <!-- Seed Booking (Social Point) - Unlocks only after Plowing is filled -->
     <div class="icon-tile {% if farmer['status'] in ['Social Point Assigned','Completed'] and plowing %}unlocked{% else %}locked{% endif %}">
       <div class="big-emoji">🌱</div>
       <h4 data-i18n="seed_booking">Seed Booking (Social Point)</h4>
@@ -165,16 +162,26 @@
 
   {% if farmer['status'] in ['Verified', 'Social Point Assigned', 'Completed'] %}
   <div class="card">
-    <h3 data-i18n="sec_plowing">🚜 Plowing</h3>
+    <h3 data-i18n="sec_plowing">🚜 Plowing &amp; Seed Distribution</h3>
 
     {% if plowing %}
-      <!-- Read-only locked view once submitted -->
       <div class="info-row"><span class="k" data-i18n="crop_name">Crop Name</span><span class="v">{{ plowing['crop_name'] }}</span></div>
       <div class="info-row">
         <span class="k" data-i18n="multi_crop_status">Multiple Crops</span>
         <span class="v">{% if plowing['multiple_crops'] %}<span data-i18n="yes">Yes</span> ({{ plowing['second_crop'] }}){% else %}<span data-i18n="no">No</span>{% endif %}</span>
       </div>
       <div class="info-row"><span class="k" data-i18n="approx_qty">Approx. Quantity</span><span class="v">{{ plowing['quantity_approx'] }}</span></div>
+      
+      <!-- Seed Giving Details Filled by Procurement Centre -->
+      {% if seed_giving %}
+        <div class="info-row"><span class="k">Quantity of Seed (Kg)</span><span class="v"><strong>{{ seed_giving['seed_amount_kg'] }} kg</strong></span></div>
+        <div class="info-row"><span class="k">Amount (Price)</span><span class="v"><strong>₹{{ seed_giving['price'] }}</strong></span></div>
+        <div class="info-row"><span class="k">Mode of Payment</span><span class="v"><strong>{{ seed_giving['payment_mode'] }}</strong></span></div>
+        <div class="info-row"><span class="k">Distribution Status</span><span class="v"><span class="badge badge-verified">Completed ✅</span></span></div>
+      {% else %}
+        <div class="info-row"><span class="k">Seed Distribution</span><span class="v muted mini">Pending collection at procurement center</span></div>
+      {% endif %}
+
       <div class="info-row">
         <span class="k" data-i18n="seed_booking">Booked Seed Slot</span>
         <span class="v">
@@ -190,7 +197,6 @@
       </div>
 
     {% else %}
-      <!-- Form view for first-time entry -->
       <form method="POST" action="{{ url_for('plowing_submit') }}">
         <label data-i18n="crop_name">Crop Name</label>
         <select name="crop_name" required>
@@ -268,7 +274,7 @@
         <div class="info-row"><span class="k" data-i18n="farmer_name">Name</span><span class="v">{{ farmer['name'] }}</span></div>
         <div class="info-row"><span class="k" data-i18n="mobile_no">Mobile</span><span class="v">{{ farmer['mobile'] }}</span></div>
         <div class="info-row"><span class="k" data-i18n="kishan_id">Kishan ID</span><span class="v">{{ farmer['kishan_id'] or '—' }}</span></div>
-        <div class="info-row"><span class="k" data-i18n="aadhar_no">Aadhar</span><span class="v">{{ farmer['aadhar'] }}</span></div>
+        <div class="info-row"><span class="k" data-i18n="aadhar_no">Aadhar</span><span class="v">[Aadhaar on File]</span></div>
       </div>
       <div>
         <h4 data-i18n="cat_land">Land</h4>
@@ -362,7 +368,7 @@ const translations = {
     verified_tag: "Verified ✅",
     not_verified_tag: "Not Verified",
     no_verification: "No verification result yet.",
-    sec_plowing: "🚜 Plowing",
+    sec_plowing: "🚜 Plowing & Seed Distribution",
     crop_name: "Crop Name",
     multi_crop_label: "Growing multiple crops?",
     multi_crop_status: "Multiple Crops",
@@ -452,7 +458,7 @@ const translations = {
     verified_tag: "सत्यापित ✅",
     not_verified_tag: "सत्यापित नहीं",
     no_verification: "अभी तक कोई सत्यापन परिणाम नहीं।",
-    sec_plowing: "🚜 जुताई",
+    sec_plowing: "🚜 जुताई एवं बीज वितरण",
     crop_name: "फसल का नाम",
     multi_crop_label: "क्या आप एक से अधिक फसलें उगा रहे हैं?",
     multi_crop_status: "एकाधिक फसलें",
@@ -542,7 +548,7 @@ const translations = {
     verified_tag: "যাচাইকৃত ✅",
     not_verified_tag: "যাচাই করা হয়নি",
     no_verification: "এখনও কোনো যাচাইয়ের ফলাফল নেই।",
-    sec_plowing: "🚜 জমি চাষ",
+    sec_plowing: "🚜 জমি চাষ ও বীজ বিতরণ",
     crop_name: "ফসলের নাম",
     multi_crop_label: "একাধিক ফসল ফলাচ্ছেন?",
     multi_crop_status: "একাধিক ফসল",
@@ -632,7 +638,7 @@ const translations = {
     verified_tag: "ਤਸਦੀਕ ਕੀਤਾ ਗਿਆ ✅",
     not_verified_tag: "ਤਸਦੀਕ ਨਹੀਂ ਹੋਇਆ",
     no_verification: "ਅਜੇ ਤੱਕ ਕੋਈ ਨਤੀਜਾ ਨਹੀਂ।",
-    sec_plowing: "🚜 ਹਲ ਵਾਹੁਣਾ",
+    sec_plowing: "🚜 ਹਲ ਵਾਹੁਣਾ ਅਤੇ ਬੀਜ ਵੰਡ",
     crop_name: "ਫ਼ਸਲ ਦਾ ਨਾਮ",
     multi_crop_label: "ਕੀ ਤੁਸੀਂ ਇੱਕ ਤੋਂ ਵੱਧ ਫ਼ਸਲਾਂ ਉਗਾ ਰਹੇ ਹੋ?",
     multi_crop_status: "ਇੱਕ ਤੋਂ ਵੱਧ ਫ਼ਸਲਾਂ",
@@ -722,7 +728,7 @@ const translations = {
     verified_tag: "ଯାଞ୍ଚ ସଫଳ ✅",
     not_verified_tag: "ଯାଞ୍ଚ ହୋଇନାହିଁ",
     no_verification: "କୌଣସି ଯାଞ୍ଚ ଫଳାଫଳ ମିଳିନାହିଁ।",
-    sec_plowing: "🚜 ହଳ କରିବା",
+    sec_plowing: "🚜 ହଳ କରିବା ଏବଂ ବିହନ ବଣ୍ଟନ",
     crop_name: "ଫସଲର ନାମ",
     multi_crop_label: "ଏକାଧିକ ଫସଲ ଚାଷ କରୁଛନ୍ତି କି?",
     multi_crop_status: "ଏକାଧିକ ଫସଲ",
@@ -779,16 +785,12 @@ function changeLanguage(lang) {
 
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (dict[key]) {
-      el.textContent = dict[key];
-    }
+    if (dict[key]) el.textContent = dict[key];
   });
 
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     const key = el.getAttribute('data-i18n-ph');
-    if (dict[key]) {
-      el.setAttribute('placeholder', dict[key]);
-    }
+    if (dict[key]) el.setAttribute('placeholder', dict[key]);
   });
 
   document.getElementById('langSelect').value = lang;
