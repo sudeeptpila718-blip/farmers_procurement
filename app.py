@@ -32,12 +32,27 @@ ADMIN_USER = {"username": "admin", "password": "admin123"}
 PROCUREMENT_USER = {"username": "procurement", "password": "procure123"}
 
 STATE_DISTRICTS = {
-    "West Bengal": ["Kolkata", "Howrah", "Nadia", "Murshidabad", "Bardhaman", "Malda"],
+    "West Bengal": [
+        "Alipurduar", "Bankura", "Birbhum", "Cooch Behar", "Dakshin Dinajpur",
+        "Darjeeling", "Hooghly", "Howrah", "Jalpaiguri", "Jhargram",
+        "Kalimpong", "Kolkata", "Malda", "Murshidabad", "Nadia",
+        "North 24 Parganas", "Paschim Bardhaman", "Paschim Medinipur",
+        "Purba Bardhaman", "Purba Medinipur", "Purulia", "South 24 Parganas",
+        "Uttar Dinajpur"
+    ],
+    "Odisha": [
+        "Anugola (Angul)", "Balangir", "Baleshwar (Balasore)", "Baragada (Bargarh)",
+        "Bhadrak", "Boudh", "Cuttack (Kataka)", "Debagada (Deogarh)", "Dhenkanal",
+        "Gajapati", "Ganjam", "Jagatsinghapur", "Jajpur", "Jharsuguda",
+        "Kalahandi", "Kandhamala (Kandhamal)", "Kendrapada (Kendrapara)",
+        "Kendujhar (Keonjhar)", "Khordha", "Koraput", "Malkangiri", "Mayurbhanj",
+        "Nabarangpur", "Nayagada (Nayagarh)", "Nuapada", "Puri", "Rayagada",
+        "Sambalpur", "Subarnapur (Sonepur)", "Sundaragada (Sundargarh)"
+    ],
     "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Darbhanga"],
     "Uttar Pradesh": ["Lucknow", "Kanpur", "Varanasi", "Agra", "Meerut"],
     "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala"],
     "Maharashtra": ["Pune", "Nagpur", "Nashik", "Aurangabad", "Kolhapur"],
-    "Odisha": ["Bhubaneswar", "Cuttack", "Puri", "Sambalpur"],
     "Assam": ["Guwahati", "Dibrugarh", "Silchar", "Jorhat"],
 }
 
@@ -156,9 +171,14 @@ def init_db():
 
         CREATE TABLE IF NOT EXISTS harvesting (
             farmer_app_no TEXT PRIMARY KEY,
+            crop1_name TEXT,
             quantity TEXT,
-            quality TEXT,
             amount TEXT,
+            crop2_name TEXT,
+            crop2_quantity TEXT,
+            crop2_amount TEXT,
+            quality TEXT,
+            total_amount TEXT,
             status TEXT DEFAULT 'Pending'
         );
 
@@ -167,15 +187,25 @@ def init_db():
             farmer_app_no TEXT,
             season TEXT,
             crop TEXT,
-            quantity REAL
+            quantity REAL,
+            amount REAL DEFAULT 0
         );
         """
     )
-    try:
-        db.execute("ALTER TABLE farmers ADD COLUMN transferred_at TEXT")
-        db.commit()
-    except sqlite3.OperationalError:
-        pass
+    # Safe migration for two-crop columns in harvesting
+    for col_def in [
+        "ALTER TABLE harvesting ADD COLUMN crop1_name TEXT",
+        "ALTER TABLE harvesting ADD COLUMN crop2_name TEXT",
+        "ALTER TABLE harvesting ADD COLUMN crop2_quantity TEXT",
+        "ALTER TABLE harvesting ADD COLUMN crop2_amount TEXT",
+        "ALTER TABLE harvesting ADD COLUMN total_amount TEXT",
+        "ALTER TABLE crop_analytics ADD COLUMN amount REAL DEFAULT 0"
+    ]:
+        try:
+            db.execute(col_def)
+            db.commit()
+        except sqlite3.OperationalError:
+            pass
 
     cur = db.execute("SELECT COUNT(*) c FROM slot_options")
     if cur.fetchone()["c"] == 0:
@@ -185,6 +215,8 @@ def init_db():
             ("verification", "2026-09-24", "11:30 AM"),
             ("seed", "2026-10-01", "09:00 AM"),
             ("seed", "2026-10-02", "01:00 PM"),
+            ("harvesting", "2026-11-15", "10:00 AM"),
+            ("harvesting", "2026-11-16", "02:30 PM"),
         ]
         db.executemany(
             "INSERT INTO slot_options (slot_type, slot_date, slot_time) VALUES (?,?,?)",
@@ -232,14 +264,23 @@ def stats_for(db, min_status_index=0):
     collected_row = db.execute("SELECT COALESCE(SUM(price), 0) s FROM seed_giving").fetchone()
     money_collected = round(collected_row["s"] or 0, 2)
 
-    harvest_rows = db.execute("SELECT amount FROM harvesting").fetchall()
+    harvest_rows = db.execute("SELECT amount, total_amount, quantity, crop2_quantity FROM harvesting").fetchall()
     money_given = 0.0
+    total_crop_qty = 0.0
     for hr in harvest_rows:
         try:
-            val = float(re.sub(r"[^\d.]", "", hr["amount"] or "0"))
+            amt_str = hr["total_amount"] or hr["amount"] or "0"
+            val = float(re.sub(r"[^\d.]", "", amt_str))
             money_given += val
         except ValueError:
             pass
+        for q_field in ["quantity", "crop2_quantity"]:
+            try:
+                q_digits = re.findall(r"[\d.]+", hr[q_field] or "")
+                if q_digits:
+                    total_crop_qty += float(q_digits[0])
+            except (ValueError, IndexError):
+                pass
 
     return {
         "total": total,
@@ -247,6 +288,7 @@ def stats_for(db, min_status_index=0):
         "pending": pending,
         "done": done,
         "total_land": round(land_row["s"] or 0, 2),
+        "total_crop_collected": round(total_crop_qty, 1),
         "money_collected": round(money_collected, 2),
         "money_given": round(money_given, 2),
     }
@@ -399,13 +441,19 @@ def dashboard():
     seed_slot_options = db.execute(
         "SELECT * FROM slot_options WHERE slot_type='seed' ORDER BY slot_date, slot_time"
     ).fetchall()
+    harvesting_slot_options = db.execute(
+        "SELECT * FROM slot_options WHERE slot_type='harvesting' ORDER BY slot_date, slot_time"
+    ).fetchall()
     plowing = db.execute("SELECT * FROM plowing WHERE farmer_app_no=?", (app_no,)).fetchone()
     seed_giving = db.execute("SELECT * FROM seed_giving WHERE farmer_app_no=?", (app_no,)).fetchone()
     harvesting = db.execute("SELECT * FROM harvesting WHERE farmer_app_no=?", (app_no,)).fetchone()
-    analytics = db.execute(
-        "SELECT season, crop, quantity FROM crop_analytics WHERE farmer_app_no=? ORDER BY id",
-        (app_no,),
-    ).fetchall()
+    
+    analytics = [
+        dict(r) for r in db.execute(
+            "SELECT season, crop, quantity, amount FROM crop_analytics WHERE farmer_app_no=? ORDER BY id",
+            (app_no,),
+        ).fetchall()
+    ]
 
     just_registered = session.pop("just_registered", False)
     status_index = STATUS_STEPS.index(farmer["status"]) if farmer["status"] in STATUS_STEPS else 0
@@ -418,6 +466,7 @@ def dashboard():
         my_slots=my_slots,
         verification_slot_options=verification_slot_options,
         seed_slot_options=seed_slot_options,
+        harvesting_slot_options=harvesting_slot_options,
         plowing=plowing,
         seed_giving=seed_giving,
         harvesting=harvesting,
@@ -427,6 +476,30 @@ def dashboard():
         just_registered=just_registered,
         crops=CROPS,
     )
+
+
+@app.route("/start-new-cycle", methods=["POST"])
+@farmer_login_required
+def start_new_cycle():
+    db = get_db()
+    app_no = session["farmer_app_no"]
+
+    farmer = db.execute("SELECT * FROM farmers WHERE app_no=?", (app_no,)).fetchone()
+    if not farmer or farmer["status"] != "Completed":
+        flash("You can only start a new crop cycle after completing your current harvest.", "error")
+        return redirect(url_for("dashboard"))
+
+    # Reset active farming data, keeping land verification intact
+    db.execute("DELETE FROM plowing WHERE farmer_app_no=?", (app_no,))
+    db.execute("DELETE FROM seed_giving WHERE farmer_app_no=?", (app_no,))
+    db.execute("DELETE FROM harvesting WHERE farmer_app_no=?", (app_no,))
+    db.execute("DELETE FROM farmer_slots WHERE farmer_app_no=? AND slot_type IN ('seed', 'harvesting')", (app_no,))
+
+    db.execute("UPDATE farmers SET status='Verified' WHERE app_no=?", (app_no,))
+    db.commit()
+
+    flash("New seasonal crop cycle initiated! Land verification has been retained. You can now save your plowing details.", "success")
+    return redirect(url_for("dashboard"))
 
 
 @app.route("/book-slot", methods=["POST"])
@@ -507,12 +580,18 @@ def admin():
     for r in db.execute("SELECT * FROM farmer_slots"):
         my_slots.setdefault(r["farmer_app_no"], {})[r["slot_type"]] = r
 
+    officers = {
+        r["farmer_app_no"]: r["officer_name"]
+        for r in db.execute("SELECT farmer_app_no, officer_name FROM officers GROUP BY farmer_app_no")
+    }
+
     stats = stats_for(db)
     
     return render_template(
         "admin.html", 
         farmers=active_farmers, 
         my_slots=my_slots,
+        officers=officers,
         stats=stats
     )
 
@@ -579,22 +658,15 @@ def procurement():
     harvesting_records = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM harvesting")}
     seed_records = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM seed_giving")}
 
-    seed_count_row = db.execute(
-        """SELECT COUNT(DISTINCT f.app_no) as c
-           FROM farmers f
-           JOIN farmer_slots s ON f.app_no = s.farmer_app_no AND s.slot_type = 'seed'
-           JOIN plowing p ON f.app_no = p.farmer_app_no
-           LEFT JOIN seed_giving sg ON f.app_no = sg.farmer_app_no
-           WHERE f.status != 'Declined' AND sg.farmer_app_no IS NULL"""
-    ).fetchone()
-    seed_booked_count = seed_count_row["c"] if seed_count_row else 0
-
     stats = stats_for(db)
     verification_slots = db.execute(
         "SELECT * FROM slot_options WHERE slot_type='verification' ORDER BY slot_date, slot_time"
     ).fetchall()
     seed_slots = db.execute(
         "SELECT * FROM slot_options WHERE slot_type='seed' ORDER BY slot_date, slot_time"
+    ).fetchall()
+    harvesting_slots = db.execute(
+        "SELECT * FROM slot_options WHERE slot_type='harvesting' ORDER BY slot_date, slot_time"
     ).fetchall()
 
     now = datetime.now()
@@ -622,13 +694,18 @@ def procurement():
         plowing_records=plowing_records,
         harvesting_records=harvesting_records,
         seed_records=seed_records,
-        seed_booked_count=seed_booked_count,
         stats=stats,
         verification_slots=verification_slots,
         seed_slots=seed_slots,
+        harvesting_slots=harvesting_slots,
         four_days_passed=four_days_passed,
         pending_farmers=pending_farmers,
     )
+
+
+@app.route("/api/districts/<state>")
+def api_districts(state):
+    return jsonify(STATE_DISTRICTS.get(state, []))
 
 
 @app.route("/api/farmer-details/<app_no>")
@@ -676,6 +753,7 @@ def api_farmer_details(app_no):
             "land_decimal": farmer["land_decimal"],
             "status": farmer["status"],
             "created_at": farmer["created_at"],
+            "transferred_at": farmer["transferred_at"],
         },
         "docs": {
             "kishan": farmer["kishan_doc"],
@@ -727,7 +805,6 @@ def seed_giving_save(app_no):
             datetime.now().strftime("%Y-%m-%d %H:%M"),
         ),
     )
-    # Update status to Seed Distribution Done so both dashboards reflect the new stage
     db.execute("UPDATE farmers SET status='Seed Distribution Done' WHERE app_no=?", (app_no,))
     db.commit()
     flash(f"Seed distribution saved for Application {app_no}. Status updated to 'Seed Distribution Done'.", "success")
@@ -802,22 +879,58 @@ def assign_social_point(app_no):
 def harvest_save():
     db = get_db()
     app_no = request.form.get("farmer_app_no", "").strip()
-    quantity = request.form.get("quantity", "").strip()
-    quality = request.form.get("quality", "").strip()
-    amount = request.form.get("amount", "").strip()
+    crop1_name = request.form.get("crop1_name", "").strip()
+    quantity1 = request.form.get("quantity", "").strip()
+    amount1 = request.form.get("amount", "").strip()
+    
+    crop2_name = request.form.get("crop2_name", "").strip()
+    crop2_quantity = request.form.get("crop2_quantity", "").strip()
+    crop2_amount = request.form.get("crop2_amount", "").strip()
+    quality = request.form.get("quality", "Grade A").strip()
+
+    # Calculate total payout
+    amt1_val = float(re.sub(r"[^\d.]", "", amount1 or "0") or 0)
+    amt2_val = float(re.sub(r"[^\d.]", "", crop2_amount or "0") or 0)
+    total_amt = str(amt1_val + amt2_val)
 
     db.execute(
-        """INSERT INTO harvesting (farmer_app_no, quantity, quality, amount, status)
-           VALUES (?,?,?,?, 'Transferred')
+        """INSERT INTO harvesting 
+           (farmer_app_no, crop1_name, quantity, amount, crop2_name, crop2_quantity, crop2_amount, quality, total_amount, status)
+           VALUES (?,?,?,?,?,?,?,?,?,'Transferred')
            ON CONFLICT(farmer_app_no) DO UPDATE SET
-             quantity=excluded.quantity, quality=excluded.quality,
-             amount=excluded.amount, status='Transferred'""",
-        (app_no, quantity, quality, amount),
+             crop1_name=excluded.crop1_name,
+             quantity=excluded.quantity,
+             amount=excluded.amount,
+             crop2_name=excluded.crop2_name,
+             crop2_quantity=excluded.crop2_quantity,
+             crop2_amount=excluded.crop2_amount,
+             quality=excluded.quality,
+             total_amount=excluded.total_amount,
+             status='Transferred'""",
+        (app_no, crop1_name, quantity1, amount1, crop2_name, crop2_quantity, crop2_amount, quality, total_amt),
     )
-    # Process complete - finalize farmer cycle
+
+    # Store genuine seasonal analytics points for charts
+    count_row = db.execute("SELECT COUNT(DISTINCT season) c FROM crop_analytics WHERE farmer_app_no=?", (app_no,)).fetchone()
+    current_season_idx = (count_row["c"] or 0) + 1
+    season_tag = f"Season {current_season_idx}"
+
+    q1_val = float(re.findall(r"[\d.]+", quantity1)[0]) if re.findall(r"[\d.]+", quantity1) else 15.0
+    db.execute(
+        "INSERT INTO crop_analytics (farmer_app_no, season, crop, quantity, amount) VALUES (?, ?, ?, ?, ?)",
+        (app_no, season_tag, crop1_name, q1_val, amt1_val)
+    )
+
+    if crop2_name and crop2_quantity:
+        q2_val = float(re.findall(r"[\d.]+", crop2_quantity)[0]) if re.findall(r"[\d.]+", crop2_quantity) else 8.0
+        db.execute(
+            "INSERT INTO crop_analytics (farmer_app_no, season, crop, quantity, amount) VALUES (?, ?, ?, ?, ?)",
+            (app_no, season_tag, crop2_name, q2_val, amt2_val)
+        )
+
     db.execute("UPDATE farmers SET status='Completed' WHERE app_no=?", (app_no,))
     db.commit()
-    flash(f"Harvest information saved for Farmer {app_no}. Process completed and moved to History.", "success")
+    flash(f"Harvest data and DBT transfer recorded for Farmer {app_no}. Cycle finalized.", "success")
     return redirect(url_for("procurement"))
 
 
@@ -898,11 +1011,6 @@ def officer_form():
 
     existing = db.execute("SELECT * FROM verification_results WHERE farmer_app_no=?", (app_no,)).fetchone()
     return render_template("officer_form.html", farmer=farmer, existing=existing, crops=CROPS)
-
-
-@app.route("/api/districts/<state>")
-def api_districts(state):
-    return jsonify(STATE_DISTRICTS.get(state, []))
 
 
 if __name__ == "__main__":

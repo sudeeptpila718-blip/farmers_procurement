@@ -1,256 +1,559 @@
 {% extends "base.html" %}
-{% block title %}Procurement Center — Farmers Procurement System{% endblock %}
+{% block title %}Procurement Operations Center — Farmers Procurement System{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --brand-forest: #1b5e20;
+    --brand-accent: #2e7d32;
+    --brand-light: #f0fdf4;
+    --surface-white: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+
+  .portal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .portal-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: var(--brand-forest);
+    font-weight: 700;
+  }
+
+  .metrics-grid-header {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .metric-card-box {
+    background: var(--surface-white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    transition: transform 0.15s ease;
+  }
+
+  .metric-card-box:hover {
+    transform: translateY(-2px);
+  }
+
+  .metric-card-box .num {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .metric-card-box .lbl {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .procurement-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+
+  .proc-sidebar {
+    background: var(--surface-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: sticky;
+    top: 20px;
+  }
+
+  .proc-sidebar .nav-heading {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    padding: 8px 12px 4px 12px;
+  }
+
+  .proc-sidebar .sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s ease;
+  }
+
+  .proc-sidebar .sidebar-btn:hover {
+    background: #f8fafc;
+    color: var(--text-main);
+  }
+
+  .proc-sidebar .sidebar-btn.active {
+    background: var(--brand-light);
+    color: var(--brand-accent);
+    border-color: #bbf7d0;
+  }
+
+  .proc-sidebar .sidebar-btn .icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .proc-content {
+    min-width: 0;
+  }
+
+  .proc-panel {
+    display: none;
+  }
+
+  .proc-panel.active {
+    display: block;
+  }
+
+  .panel-card {
+    background: var(--surface-white);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    margin-bottom: 20px;
+  }
+
+  .panel-header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+  }
+
+  .panel-header-bar h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  @media (max-width: 860px) {
+    .procurement-layout {
+      grid-template-columns: 1fr;
+    }
+    .proc-sidebar {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+    .proc-sidebar .sidebar-btn {
+      flex: 1 1 calc(50% - 6px);
+    }
+  }
+</style>
+{% endblock %}
+
 {% block nav %}
-  <button type="button" class="btn btn-wheat btn-sm" onclick="openHistoryModal()" style="margin-right:8px;">📜 History</button>
   <a href="{{ url_for('officer_login') }}" class="pill-highlight">Verification Officers Login</a>
   <a href="{{ url_for('procurement_logout') }}">Logout</a>
 {% endblock %}
 
 {% block content %}
-<h2>🏭 Procurement Center Dashboard</h2>
+<div class="portal-header">
+  <div>
+    <h2>🏭 Procurement Center &bull; Operational Dashboard</h2>
+    <p class="mini muted" style="margin:2px 0 0 0;">Manage land verifications, dispatch subsidized seeds, and process crop procurement payouts.</p>
+  </div>
+</div>
 
-<!-- Stat Boxes including Total Money Collected and Total Money Given -->
-<div class="grid grid-4" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); margin-bottom:15px; gap:12px;">
-  <div class="stat-box"><div class="num">{{ stats['total'] }}</div><div class="label">Total Registrations</div></div>
-  <div class="stat-box"><div class="num">{{ farmers|length }}</div><div class="label">Received from Kishan Seva</div></div>
-  
-  <div class="stat-box" onclick="openPendingModal()" style="cursor:pointer; border: 2px solid var(--wheat); transition: transform 0.15s ease;" title="Click to view pending applications">
-    <div class="num" style="color:var(--earth-700);">{{ stats['pending'] }}</div>
-    <div class="label"><strong>⏳ Pending (Click to View)</strong></div>
+<!-- Header Metrics -->
+<div class="metrics-grid-header">
+  <div class="metric-card-box">
+    <div class="num" style="color:#0f172a;">{{ stats['total'] }}</div>
+    <div class="lbl">Total Registrations</div>
   </div>
 
-  <div class="stat-box"><div class="num">{{ stats['done'] }}</div><div class="label">Completed</div></div>
-  <div class="stat-box"><div class="num">{{ stats['total_land'] }}</div><div class="label">Total Land (decimal)</div></div>
+  <div class="metric-card-box">
+    <div class="num" style="color:#2563eb;">{{ farmers|length }}</div>
+    <div class="lbl">Received In Center</div>
+  </div>
 
-  <!-- Financial stat cards -->
-  <div class="stat-box" style="border: 2px solid #16a34a; background:#f0fdf4;">
+  <div class="metric-card-box" onclick="openPendingModal()" style="cursor:pointer; border:1px solid #fcd34d; background:#fffbeb;" title="Click to view pending applications">
+    <div class="num" style="color:#b45309;">{{ stats['pending'] }}</div>
+    <div class="lbl">⏳ Pending Pipeline</div>
+  </div>
+
+  <div class="metric-card-box">
+    <div class="num" style="color:#15803d;">{{ stats['done'] }}</div>
+    <div class="lbl">Completed Cycles</div>
+  </div>
+
+  <div class="metric-card-box">
+    <div class="num" style="color:#7c3aed;">{{ stats['total_land'] }}</div>
+    <div class="lbl">Registered Land (dec)</div>
+  </div>
+
+  <div class="metric-card-box" style="border-left: 4px solid #16a34a; background:#f0fdf4;">
     <div class="num" style="color:#15803d;">₹{{ stats['money_collected'] }}</div>
-    <div class="label"><strong>💰 Total Money Collected (Seeds)</strong></div>
+    <div class="lbl">💰 Seeds Revenue</div>
   </div>
 
-  <div class="stat-box" style="border: 2px solid #2563eb; background:#eff6ff;">
+  <div class="metric-card-box" style="border-left: 4px solid #2563eb; background:#eff6ff;">
     <div class="num" style="color:#1d4ed8;">₹{{ stats['money_given'] }}</div>
-    <div class="label"><strong>💸 Total Money Given (Harvest)</strong></div>
+    <div class="lbl">💸 Harvest Paid</div>
   </div>
 </div>
 
-<!-- Date & Time options -->
-<div class="section-title"><span class="emoji">🗓️</span> Date &amp; Time Options</div>
-<div class="grid grid-2">
-  <div class="card">
-    <h3>1. Verification Slots (Land Verification)</h3>
-    <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-      <input type="hidden" name="slot_type" value="verification">
-      <div style="flex:1;min-width:140px;"><label>Date</label><input type="date" name="slot_date" required></div>
-      <div style="flex:1;min-width:120px;"><label>Time</label><input type="time" name="slot_time" required></div>
-      <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:14px;">Add Option</button>
-    </form>
-    <div class="slot-options">
-      {% for s in verification_slots %}
-        <span class="slot-chip">{{ s['slot_date'] }} · {{ s['slot_time'] }}</span>
-      {% else %}
-        <span class="muted mini">No slots added yet.</span>
-      {% endfor %}
+<!-- Main Split Container -->
+<div class="procurement-layout">
+
+  <!-- Left Side Vertical Navigation -->
+  <aside class="proc-sidebar">
+    <div class="nav-heading">Operations Menu</div>
+    
+    <button type="button" class="sidebar-btn active" onclick="showProcPanel('farmers', this)">
+      <span class="icon">👨‍🌾</span>
+      <span>Active Farmers</span>
+    </button>
+
+    <button type="button" class="sidebar-btn" onclick="showProcPanel('stage-ops', this)">
+      <span class="icon">⚙️</span>
+      <span>Stage Operations</span>
+    </button>
+
+    <button type="button" class="sidebar-btn" onclick="showProcPanel('datetime', this)">
+      <span class="icon">🗓️</span>
+      <span>Date &amp; Time Options</span>
+    </button>
+
+    <button type="button" class="sidebar-btn" onclick="showProcPanel('history', this)">
+      <span class="icon">📜</span>
+      <span>Farmer Records History</span>
+    </button>
+  </aside>
+
+  <!-- Right Side Content Panels -->
+  <main class="proc-content">
+
+    <!-- 1. ACTIVE FARMERS PANEL -->
+    <div id="panel-farmers" class="proc-panel active">
+      <div class="panel-card" style="margin-top:0;">
+        <div class="panel-header-bar">
+          <h3>👨‍🌾 Farmers in Active Procurement Pipeline</h3>
+          <span class="badge badge-verify">{{ farmers|length }} Active</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>App No.</th>
+                <th>Farmer Name</th>
+                <th>Mobile &amp; Location</th>
+                <th>Land Info</th>
+                <th>Docs</th>
+                <th>Slot Reservation</th>
+                <th>Current Status</th>
+                <th>Verification Officer &amp; Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in farmers %}
+              {% set officer = officers_by_farmer.get(f['app_no']) %}
+              {% set slots = my_slots.get(f['app_no'], {}) %}
+              {% set has_verify_slot = slots.get('verification') is not none %}
+              {% set is_expired = four_days_passed.get(f['app_no'], False) %}
+
+              <tr>
+                <td><strong>#{{ f['app_no'] }}</strong></td>
+                <td>
+                  <div style="font-weight:600; color:#1e293b;">{{ f['name'] }}</div>
+                  <div class="mini muted">Kishan ID: {{ f['kishan_id'] or '—' }}</div>
+                </td>
+                <td>
+                  <div class="mini">📱 {{ f['mobile'] }}</div>
+                  <div class="mini muted">{{ f['village'] }}, {{ f['district'] }}</div>
+                </td>
+                <td>
+                  <div class="mini"><strong>{{ f['land_decimal'] }}</strong> dec</div>
+                  <div class="mini muted">{{ f['has_land'] }} &bull; {{ f['land_type'] or 'Own' }}</div>
+                </td>
+                <td>
+                  {% for label, doc in [('Kishan', f['kishan_doc']), ('Aadhar', f['aadhar_doc']), ('Land', f['land_doc'])] %}
+                    {% if doc %}<a class="doc-link" href="{{ url_for('static', filename='uploads/' ~ doc) }}" target="_blank">{{ label }}</a>{% endif %}{% if not loop.last %} &bull; {% endif %}
+                  {% endfor %}
+                </td>
+                <td>
+                  {% if has_verify_slot %}
+                    <span class="badge badge-verified">Verify: {{ slots['verification']['slot_date'] }} ({{ slots['verification']['slot_time'] }})</span><br>
+                  {% endif %}
+                  {% if slots.get('seed') %}
+                    <span class="badge badge-social" style="margin-top:2px;">Seed: {{ slots['seed']['slot_date'] }} ({{ slots['seed']['slot_time'] }})</span><br>
+                  {% endif %}
+                  {% if slots.get('harvesting') %}
+                    <span class="badge badge-completed" style="margin-top:2px;">Harvest: {{ slots['harvesting']['slot_date'] }} ({{ slots['harvesting']['slot_time'] }})</span>
+                  {% endif %}
+                  {% if not has_verify_slot and not slots.get('seed') and not slots.get('harvesting') %}
+                    <span class="muted mini">No Slot Booked</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge
+                    {% if f['status']=='Procurement Centre' %}badge-procurement
+                    {% elif f['status']=='Verification Officer Assigned' %}badge-verify
+                    {% elif f['status']=='Verified' %}badge-verified
+                    {% elif f['status']=='Social Point Assigned' %}badge-social
+                    {% elif f['status']=='Seed Distribution Done' %}badge-verified
+                    {% elif f['status']=='Completed' %}badge-completed
+                    {% else %}badge-app{% endif %}">{{ f['status'] }}</span>
+                </td>
+                <td>
+                  {% if officer %}
+                    <div class="mini"><strong>{{ officer['officer_name'] }}</strong></div>
+                    <div class="mini muted">{{ officer['officer_contact'] }}</div>
+                    <span class="badge badge-verified" style="margin-top:2px;">Officer Confirmed</span>
+                  {% elif has_verify_slot %}
+                    <form method="POST" action="{{ url_for('assign_officer', app_no=f['app_no']) }}" style="min-width:180px;">
+                      <input type="text" name="officer_name" placeholder="Officer name" required style="margin-bottom:4px; font-size:12px;">
+                      <input type="text" name="officer_contact" placeholder="Phone" required style="margin-bottom:4px; font-size:12px;">
+                      <button type="submit" class="btn btn-primary btn-sm btn-block">Confirm Assignment</button>
+                    </form>
+                  {% elif is_expired %}
+                    <div class="mini" style="color:var(--danger); margin-bottom:4px;"><strong>4 days lapsed.</strong> Force date:</div>
+                    <form method="POST" action="{{ url_for('procurement_force_slot', app_no=f['app_no']) }}" style="min-width:180px;">
+                      <input type="date" name="slot_date" required style="margin-bottom:4px; font-size:12px;">
+                      <input type="time" name="slot_time" required style="margin-bottom:4px; font-size:12px;">
+                      <button type="submit" class="btn btn-wheat btn-sm btn-block">Force Set Slot</button>
+                    </form>
+                  {% else %}
+                    <div class="mini muted" style="padding:6px; background:#f8fafc; border-radius:6px; border:1px dashed #cbd5e1;">
+                      🔒 Awaiting farmer verification slot
+                    </div>
+                  {% endif %}
+
+                  {% if f['status'] == 'Verified' %}
+                    <form method="POST" action="{{ url_for('assign_social_point', app_no=f['app_no']) }}" style="margin-top:6px;">
+                      <button type="submit" class="btn btn-wheat btn-sm btn-block">Assign Social Point</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+              {% else %}
+              <tr><td colspan="8" class="center muted" style="padding:24px;">No active farmers pending processing.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="card">
-    <h3>2. Social Point Slots (Seed Taking)</h3>
-    <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-      <input type="hidden" name="slot_type" value="seed">
-      <div style="flex:1;min-width:140px;"><label>Date</label><input type="date" name="slot_date" required></div>
-      <div style="flex:1;min-width:120px;"><label>Time</label><input type="time" name="slot_time" required></div>
-      <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:14px;">Add Option</button>
-    </form>
-    <div class="slot-options">
-      {% for s in seed_slots %}
-        <span class="slot-chip">{{ s['slot_date'] }} · {{ s['slot_time'] }}</span>
-      {% else %}
-        <span class="muted mini">No slots added yet.</span>
-      {% endfor %}
-    </div>
-  </div>
-</div>
-
-<!-- Dedicated Operational Units -->
-<div class="section-title"><span class="emoji">⚙️</span> Stage Operations (Dedicated Options)</div>
-<div class="grid grid-2" style="margin-bottom: 24px;">
-  
-  <!-- 1. Dedicated Seed Giving Option -->
-  <div class="card" style="border: 2px solid #16a34a; background: #f0fdf4;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:#15803d;">🌱 1. Seed Giving</h3>
-      <span class="badge badge-verified">{{ seed_booked_count }} Booked For Seeds</span>
-    </div>
-    <p class="mini muted" style="margin:6px 0 12px 0;">Enter the farmer application number to view their verified plowing details and process seed distribution.</p>
-
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="seed_app_no_input" placeholder="Enter App No. (e.g. 1340)" maxlength="10" style="flex:1;">
-      <button type="button" class="btn btn-green btn-sm" onclick="fetchSeedFarmer()">Fetch Details</button>
-    </div>
-
-    <!-- Seed Giving Dynamic Box -->
-    <div id="seed_giving_panel" style="display:none; margin-top:14px; background:#fff; padding:14px; border-radius:6px; border:1px solid #86efac;">
-      <h4 style="margin:0 0 8px 0; color:#166534;">Farmer &amp; Land Plowing Info</h4>
-      <div class="mini" id="seed_farmer_summary" style="line-height:1.6; margin-bottom:10px;"></div>
-
-      <form id="seed_submit_form" method="POST" action="">
-        <label class="mini">Quantity of Seed (Kg) *</label>
-        <input type="number" step="0.1" name="seed_amount_kg" id="seed_amount_kg_field" required style="width:100%; margin-bottom:6px;">
-
-        <label class="mini">Amount (Rupees ₹) *</label>
-        <input type="number" step="0.5" name="price" placeholder="Price in ₹" required style="width:100%; margin-bottom:6px;">
-
-        <label class="mini">Payment Mode *</label>
-        <select name="payment_mode" required style="width:100%; margin-bottom:12px;">
-          <option value="Online">Online</option>
-          <option value="Cash">Cash</option>
-        </select>
-
-        <button type="submit" class="btn btn-green btn-block">Save Info &amp; Complete</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- 2. Dedicated Harvesting Option -->
-  <div class="card" style="border: 2px solid #d97706; background: #fffbeb;">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; color:#b45309;">🌾 2. Harvesting</h3>
-      <span class="badge" style="background:#fef3c7; color:#92400e;">Procurement Transfer</span>
-    </div>
-    <p class="mini muted" style="margin:6px 0 12px 0;">Enter application number to record final crop yield and transfer funds to the farmer.</p>
-
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="harvest_app_no_input" placeholder="Enter App No." maxlength="10" style="flex:1;">
-      <button type="button" class="btn btn-secondary btn-sm" onclick="fetchHarvestFarmer()">Fetch Farmer</button>
-    </div>
-
-    <!-- Harvesting Dynamic Box -->
-    <div id="harvest_panel" style="display:none; margin-top:14px; background:#fff; padding:14px; border-radius:6px; border:1px solid #fcd34d;">
-      <div class="mini" id="harvest_farmer_summary" style="line-height:1.6; margin-bottom:10px;"></div>
-
-      <form method="POST" action="{{ url_for('harvest_save') }}">
-        <input type="hidden" name="farmer_app_no" id="harvest_hidden_app_no">
+    <!-- 2. STAGE OPERATIONS PANEL -->
+    <div id="panel-stage-ops" class="proc-panel">
+      <div class="grid grid-2" style="margin-top:0;">
         
-        <label class="mini">Quantity (e.g. 15 Quintals) *</label>
-        <input type="text" name="quantity" required style="width:100%; margin-bottom:6px;">
+        <!-- Dedicated Seed Giving Option -->
+        <div class="panel-card" style="border: 2px solid #16a34a; background:#f0fdf4;">
+          <div class="panel-header-bar" style="border-bottom-color:#bbf7d0;">
+            <h3 style="color:#15803d;">🌱 1. Seed Giving Operations</h3>
+          </div>
+          <p class="mini muted" style="margin-bottom:12px;">Enter the farmer application number to inspect verified plowing requirements and finalize seed distribution. (Only available after farmer books seed slot).</p>
 
-        <label class="mini">Quality Grade (e.g. Grade A) *</label>
-        <input type="text" name="quality" required style="width:100%; margin-bottom:6px;">
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="seed_app_no_input" placeholder="Enter App No. (e.g. 1340)" maxlength="10" style="flex:1;">
+            <button type="button" class="btn btn-green btn-sm" onclick="fetchSeedFarmer()">Fetch Details</button>
+          </div>
 
-        <label class="mini">Amount in ₹ *</label>
-        <input type="number" step="1" name="amount" placeholder="Amount transferred to farmer" required style="width:100%; margin-bottom:12px;">
+          <div id="seed_giving_panel" style="display:none; margin-top:14px; background:#fff; padding:16px; border-radius:8px; border:1px solid #86efac;">
+            <h4 style="margin:0 0 8px 0; color:#166534; font-size:14px;">Farmer &amp; Land Plowing Audit</h4>
+            <div class="mini" id="seed_farmer_summary" style="line-height:1.6; margin-bottom:12px;"></div>
 
-        <button type="submit" class="btn btn-secondary btn-block">Save Harvest Info</button>
-      </form>
-    </div>
-  </div>
+            <form id="seed_submit_form" method="POST" action="">
+              <label class="mini">Quantity of Seed (Kg) *</label>
+              <input type="number" step="0.1" name="seed_amount_kg" id="seed_amount_kg_field" required style="width:100%; margin-bottom:8px;">
 
-</div>
+              <label class="mini">Amount (Rupees ₹) *</label>
+              <input type="number" step="0.5" name="price" placeholder="Price in ₹" required style="width:100%; margin-bottom:8px;">
 
-<!-- Active Farmers in Procurement -->
-<div class="section-title"><span class="emoji">👨‍🌾</span> 1. Farmers in Active Procurement</div>
-<div class="table-wrap card">
-  <table>
-    <thead>
-      <tr>
-        <th>App No.</th><th>Name</th><th>Mobile</th><th>State/District</th><th>Village</th>
-        <th>Land Info</th><th>Docs</th><th>Slot Booked</th><th>Status</th><th>Verification Officer</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for f in farmers %}
-      {% set officer = officers_by_farmer.get(f['app_no']) %}
-      {% set slots = my_slots.get(f['app_no'], {}) %}
-      {% set has_verify_slot = slots.get('verification') is not none %}
-      {% set is_expired = four_days_passed.get(f['app_no'], False) %}
+              <label class="mini">Payment Mode *</label>
+              <select name="payment_mode" required style="width:100%; margin-bottom:14px;">
+                <option value="Online">Online</option>
+                <option value="Cash">Cash</option>
+              </select>
 
-      <tr>
-        <td><strong>{{ f['app_no'] }}</strong></td>
-        <td>{{ f['name'] }}</td>
-        <td>{{ f['mobile'] }}</td>
-        <td>{{ f['state'] }} / {{ f['district'] }}</td>
-        <td>{{ f['village'] }}</td>
-        <td>{{ f['has_land'] }} — {{ f['land_decimal'] }} dec</td>
-        <td>
-          {% for label, doc in [('Kishan', f['kishan_doc']), ('Aadhar', f['aadhar_doc']), ('Land', f['land_doc'])] %}
-            {% if doc %}<a class="doc-link" href="{{ url_for('static', filename='uploads/' ~ doc) }}" target="_blank">{{ label }}</a>{% endif %}{% if not loop.last %} · {% endif %}
-          {% endfor %}
-        </td>
-        <td>
-          {% if has_verify_slot %}
-            Verify: <strong>{{ slots['verification']['slot_date'] }} {{ slots['verification']['slot_time'] }}</strong><br>
-          {% endif %}
-          {% if slots.get('seed') %}
-            Seed: <strong>{{ slots['seed']['slot_date'] }} {{ slots['seed']['slot_time'] }}</strong>
-          {% endif %}
-          {% if not has_verify_slot and not slots.get('seed') %}
-            <span class="muted mini">No Slot Booked</span>
-          {% endif %}
-        </td>
-        <td>
-          <span class="badge
-            {% if f['status']=='Procurement Centre' %}badge-procurement
-            {% elif f['status']=='Verification Officer Assigned' %}badge-verify
-            {% elif f['status']=='Verified' %}badge-verified
-            {% elif f['status']=='Social Point Assigned' %}badge-social
-            {% elif f['status']=='Seed Distribution Done' %}badge-verified
-            {% elif f['status']=='Completed' %}badge-completed
-            {% else %}badge-app{% endif %}">{{ f['status'] }}</span>
-        </td>
-        <td>
-          {% if officer %}
-            <div class="mini"><strong>{{ officer['officer_name'] }}</strong></div>
-            <div class="mini muted">{{ officer['officer_contact'] }}</div>
-            <span class="badge badge-verified" style="margin-top:4px;">Officer Confirmed</span>
-          {% elif has_verify_slot %}
-            <form method="POST" action="{{ url_for('assign_officer', app_no=f['app_no']) }}" style="min-width:180px;">
-              <input type="text" name="officer_name" placeholder="Officer name" required style="margin-bottom:6px;">
-              <input type="text" name="officer_contact" placeholder="Officer contact" required style="margin-bottom:6px;">
-              <button type="submit" class="btn btn-primary btn-sm btn-block">Confirm Assignment</button>
+              <button type="submit" class="btn btn-green btn-block">Save Info &amp; Mark Seed Given</button>
             </form>
-          {% elif is_expired %}
-            <div class="mini" style="color:var(--danger);margin-bottom:6px;"><strong>4 days passed without booking.</strong> Set date &amp; time:</div>
-            <form method="POST" action="{{ url_for('procurement_force_slot', app_no=f['app_no']) }}" style="min-width:180px;">
-              <input type="date" name="slot_date" required style="margin-bottom:6px;">
-              <input type="time" name="slot_time" required style="margin-bottom:6px;">
-              <button type="submit" class="btn btn-wheat btn-sm btn-block">Set Slot &amp; Enable Officer</button>
-            </form>
-          {% else %}
-            <div class="mini muted" style="padding:6px 8px; background:#f5f5f5; border-radius:6px; border:1px dashed #d1d5db;">
-              🔒 Officer assignment locked.<br>Waiting for farmer to book slot.
-            </div>
-          {% endif %}
+          </div>
+        </div>
 
-          {% if f['status'] == 'Verified' %}
-            <form method="POST" action="{{ url_for('assign_social_point', app_no=f['app_no']) }}" style="margin-top:8px;">
-              <button type="submit" class="btn btn-wheat btn-sm btn-block">Assign Social Point</button>
-            </form>
-          {% endif %}
-        </td>
-      </tr>
-      {% else %}
-      <tr><td colspan="10" class="center muted">No active farmers pending processing.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
+        <!-- Dedicated Harvesting Option (With Two Crops Input) -->
+        <div class="panel-card" style="border: 2px solid #d97706; background:#fffbeb;">
+          <div class="panel-header-bar" style="border-bottom-color:#fde68a;">
+            <h3 style="color:#b45309;">🌾 2. Harvesting &amp; Transfer</h3>
+            <span class="badge" style="background:#fef3c7; color:#92400e;">Procurement Payout</span>
+          </div>
+          <p class="mini muted" style="margin-bottom:12px;">Enter application number to record actual harvest intake and execute payout for all grown crops. (Only available after farmer books harvesting slot).</p>
 
-<!-- HISTORY SEARCH MODAL -->
-<div id="historyModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.55); overflow-y:auto;">
-  <div class="card" style="max-width:850px; margin:40px auto; background:#fff; border-radius:8px; padding:24px; position:relative;">
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:15px;">
-      <h3 style="margin:0;">📜 Farmer Records History</h3>
-      <button type="button" class="btn btn-danger btn-sm" onclick="closeHistoryModal()">✕ Close</button>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="harvest_app_no_input" placeholder="Enter App No. (e.g. 1340)" maxlength="10" style="flex:1;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="fetchHarvestFarmer()">Fetch Farmer</button>
+          </div>
+
+          <div id="harvest_panel" style="display:none; margin-top:14px; background:#fff; padding:16px; border-radius:8px; border:1px solid #fcd34d;">
+            <div class="mini" id="harvest_farmer_summary" style="line-height:1.6; margin-bottom:12px;"></div>
+
+            <form method="POST" action="{{ url_for('harvest_save') }}">
+              <input type="hidden" name="farmer_app_no" id="harvest_hidden_app_no">
+              
+              <!-- Crop 1 Section -->
+              <div style="background:#fff7ed; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #fed7aa;">
+                <strong class="mini" style="color:#9a3412;">Primary Crop Details:</strong>
+                <input type="text" name="crop1_name" id="harvest_crop1_name" placeholder="Primary Crop Name" required style="width:100%; margin:4px 0 6px 0;">
+                <div class="grid grid-2">
+                  <input type="text" name="quantity" placeholder="Quantity (e.g. 15 Quintals)" required style="width:100%;">
+                  <input type="number" step="1" name="amount" placeholder="Amount (₹)" required style="width:100%;">
+                </div>
+              </div>
+
+              <!-- Crop 2 Section (if applicable) -->
+              <div id="harvest_crop2_wrap" style="background:#fef9c3; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #fef08a;">
+                <strong class="mini" style="color:#854d0e;">Secondary Crop Details:</strong>
+                <input type="text" name="crop2_name" id="harvest_crop2_name" placeholder="Secondary Crop Name" style="width:100%; margin:4px 0 6px 0;">
+                <div class="grid grid-2">
+                  <input type="text" name="crop2_quantity" placeholder="Quantity (e.g. 8 Quintals)" style="width:100%;">
+                  <input type="number" step="1" name="crop2_amount" placeholder="Amount (₹)" style="width:100%;">
+                </div>
+              </div>
+
+              <label class="mini">Quality Grade Certified *</label>
+              <select name="quality" style="width:100%; margin-bottom:14px;">
+                <option value="Grade A (Premium)">Grade A (Premium)</option>
+                <option value="Grade B (Standard)">Grade B (Standard)</option>
+                <option value="Grade C (Fair)">Grade C (Fair)</option>
+              </select>
+
+              <button type="submit" class="btn btn-secondary btn-block">Save Harvest Info &amp; Complete Cycle</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div style="display:flex; gap:8px; margin-bottom:16px;">
-      <input type="text" id="history_search_input" placeholder="Enter Farmer Application Number..." style="flex:1;">
-      <button type="button" class="btn btn-primary btn-sm" onclick="searchFarmerHistory()">Search History</button>
+    <!-- 3. DATE & TIME SCHEDULING PANEL -->
+    <div id="panel-datetime" class="proc-panel">
+      <div class="grid grid-3" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-top:0;">
+        
+        <!-- Slot Option 1: Verification -->
+        <div class="panel-card">
+          <div class="panel-header-bar">
+            <h3>1. Land Verification Slots</h3>
+          </div>
+          <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+            <input type="hidden" name="slot_type" value="verification">
+            <div style="flex:1; min-width:130px;"><label class="mini">Date</label><input type="date" name="slot_date" required></div>
+            <div style="flex:1; min-width:110px;"><label class="mini">Time</label><input type="time" name="slot_time" required></div>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:14px;">Add Slot</button>
+          </form>
+          <div class="slot-options">
+            {% for s in verification_slots %}
+              <span class="slot-chip">{{ s['slot_date'] }} &bull; {{ s['slot_time'] }}</span>
+            {% else %}
+              <span class="muted mini">No verification slots created.</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Slot Option 2: Seed Distribution -->
+        <div class="panel-card">
+          <div class="panel-header-bar">
+            <h3>2. Seed Distribution Slots</h3>
+          </div>
+          <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+            <input type="hidden" name="slot_type" value="seed">
+            <div style="flex:1; min-width:130px;"><label class="mini">Date</label><input type="date" name="slot_date" required></div>
+            <div style="flex:1; min-width:110px;"><label class="mini">Time</label><input type="time" name="slot_time" required></div>
+            <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:14px;">Add Slot</button>
+          </form>
+          <div class="slot-options">
+            {% for s in seed_slots %}
+              <span class="slot-chip">{{ s['slot_date'] }} &bull; {{ s['slot_time'] }}</span>
+            {% else %}
+              <span class="muted mini">No seed slots created.</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Slot Option 3: Harvesting Schedule -->
+        <div class="panel-card">
+          <div class="panel-header-bar">
+            <h3>3. Harvesting Intake Slots</h3>
+          </div>
+          <form method="POST" action="{{ url_for('add_slot') }}" style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;">
+            <input type="hidden" name="slot_type" value="harvesting">
+            <div style="flex:1; min-width:130px;"><label class="mini">Date</label><input type="date" name="slot_date" required></div>
+            <div style="flex:1; min-width:110px;"><label class="mini">Time</label><input type="time" name="slot_time" required></div>
+            <button type="submit" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">Add Slot</button>
+          </form>
+          <div class="slot-options">
+            {% for s in harvesting_slots %}
+              <span class="slot-chip" style="border-color:#fcd34d;">{{ s['slot_date'] }} &bull; {{ s['slot_time'] }}</span>
+            {% else %}
+              <span class="muted mini">No harvesting slots created.</span>
+            {% endfor %}
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div id="history_results" style="display:none; line-height:1.6; font-size:14px;"></div>
-  </div>
+    <!-- 4. DEDICATED HISTORY PANEL -->
+    <div id="panel-history" class="proc-panel">
+      <div class="panel-card" style="margin-top:0;">
+        <div class="panel-header-bar">
+          <h3>📜 Farmer Records History &amp; Multi-Crop Audit</h3>
+          <span class="badge badge-verified">Two-Crop Audit</span>
+        </div>
+        <p class="mini muted" style="margin-bottom:16px;">Lookup any registered farmer to review both crop records, yield weights, and disbursed payout amounts.</p>
+
+        <div style="display:flex; gap:10px; margin-bottom:18px;">
+          <input type="text" id="embedded_history_search_input" placeholder="Enter Farmer Application Number..." style="flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px;">
+          <button type="button" class="btn btn-primary btn-sm" onclick="searchEmbeddedFarmerHistory()" style="padding:0 22px;">Search Record</button>
+        </div>
+
+        <div id="embedded_history_results" style="display:none; line-height:1.6; font-size:14px;"></div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
 <!-- Pending Applications Modal -->
@@ -277,7 +580,7 @@
           {% for p in pending_farmers %}
           {% set p_slots = my_slots.get(p['app_no'], {}) %}
           <tr>
-            <td><strong>{{ p['app_no'] }}</strong></td>
+            <td><strong>#{{ p['app_no'] }}</strong></td>
             <td>{{ p['name'] }}</td>
             <td>{{ p['mobile'] }}</td>
             <td>{{ p['state'] }} / {{ p['district'] }}</td>
@@ -314,19 +617,21 @@
 
 {% block extra_scripts %}
 <script>
+function showProcPanel(name, btnElement) {
+  document.querySelectorAll('.proc-content .proc-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.proc-sidebar .sidebar-btn').forEach(b => b.classList.remove('active'));
+
+  const target = document.getElementById('panel-' + name);
+  if (target) target.classList.add('active');
+
+  if (btnElement) btnElement.classList.add('active');
+}
+
 function openPendingModal() { document.getElementById('pendingModal').style.display = 'block'; }
 function closePendingModal() { document.getElementById('pendingModal').style.display = 'none'; }
 
-function openHistoryModal() { 
-  document.getElementById('historyModal').style.display = 'block'; 
-  document.getElementById('history_results').style.display = 'none';
-  document.getElementById('history_search_input').value = '';
-}
-function closeHistoryModal() { document.getElementById('historyModal').style.display = 'none'; }
-
 window.onclick = function(event) {
   if (event.target === document.getElementById('pendingModal')) closePendingModal();
-  if (event.target === document.getElementById('historyModal')) closeHistoryModal();
 };
 
 async function fetchSeedFarmer() {
@@ -334,17 +639,22 @@ async function fetchSeedFarmer() {
   if (!appNo) return alert('Please enter application number');
 
   try {
-    const res = await fetch(`/api/procurement/farmer-details/${encodeURIComponent(appNo)}`);
+    const res = await fetch(`/api/farmer-details/${encodeURIComponent(appNo)}`);
     const data = await res.json();
     if (!data.success) {
       alert(data.error || 'Farmer not found.');
       return;
     }
 
-    // Duplicate check: if seed giving was already finalized
     if (data.seed_giving) {
       document.getElementById('seed_giving_panel').style.display = 'none';
       alert('Completed for this Application number');
+      return;
+    }
+
+    if (!data.slots || !data.slots.seed) {
+      document.getElementById('seed_giving_panel').style.display = 'none';
+      alert('Farmer has not booked a Seed Collection slot yet.');
       return;
     }
 
@@ -353,9 +663,10 @@ async function fetchSeedFarmer() {
     const v = data.verification;
 
     let summaryHtml = `
-      <strong>Application No:</strong> ${f.app_no} | <strong>Name:</strong> ${f.name} | <strong>Mobile:</strong> ${f.mobile}<br>
-      <strong>Kishan ID:</strong> ${f.kishan_id} | <strong>Aadhaar:</strong> ${f.aadhar}<br>
+      <strong>Application No:</strong> #${f.app_no} &bull; <strong>Name:</strong> ${f.name} &bull; <strong>Mobile:</strong> ${f.mobile}<br>
+      <strong>Kishan ID:</strong> ${f.kishan_id} &bull; <strong>Aadhaar:</strong> ${f.aadhar}<br>
       <strong>Verification Status:</strong> ${v && v.verified ? '<span style="color:green;font-weight:bold;">Verified ✅</span>' : '<span style="color:red;">Not Fully Verified</span>'}<br>
+      <strong>Booked Seed Slot:</strong> ${data.slots.seed}<br>
       <strong>Officer Preferred Crop:</strong> ${v && v.preference_crop ? v.preference_crop : '—'}<br>
       <strong>Farmer Plowing Crop:</strong> ${p ? p.crop_name : 'N/A'} (Est. Qty: ${p ? p.quantity_approx : 'N/A'})
     `;
@@ -364,7 +675,7 @@ async function fetchSeedFarmer() {
     document.getElementById('seed_submit_form').action = `/procurement/seed-giving-save/${f.app_no}`;
     document.getElementById('seed_giving_panel').style.display = 'block';
   } catch (err) {
-    alert('Error connecting to server. Please check your network and try again.');
+    alert('Error connecting to server.');
   }
 }
 
@@ -373,45 +684,64 @@ async function fetchHarvestFarmer() {
   if (!appNo) return alert('Please enter application number');
 
   try {
-    const res = await fetch(`/api/procurement/farmer-details/${encodeURIComponent(appNo)}`);
+    const res = await fetch(`/api/farmer-details/${encodeURIComponent(appNo)}`);
     const data = await res.json();
     if (!data.success) {
       alert(data.error || 'Farmer not found.');
       return;
     }
 
-    // Duplicate check: if harvesting was already completed
     if (data.harvesting && data.harvesting.status === 'Transferred') {
       document.getElementById('harvest_panel').style.display = 'none';
       alert('Completed for this Application number');
       return;
     }
 
+    if (!data.slots || !data.slots.harvesting) {
+      document.getElementById('harvest_panel').style.display = 'none';
+      alert('Farmer has not booked a Harvesting slot yet.');
+      return;
+    }
+
     const f = data.farmer;
     const p = data.plowing;
     document.getElementById('harvest_farmer_summary').innerHTML = `
-      <strong>Farmer:</strong> ${f.name} (App No: ${f.app_no})<br>
-      <strong>Mobile:</strong> ${f.mobile} | <strong>Crop:</strong> ${p ? p.crop_name : '—'}<br>
-      <strong>Status:</strong> ${f.status}
+      <strong>Farmer:</strong> ${f.name} (App No: #${f.app_no})<br>
+      <strong>Mobile:</strong> ${f.mobile} &bull; <strong>Current Status:</strong> ${f.status}<br>
+      <strong>Booked Harvesting Slot:</strong> ${data.slots.harvesting}
     `;
+
     document.getElementById('harvest_hidden_app_no').value = f.app_no;
+    document.getElementById('harvest_crop1_name').value = p ? p.crop_name : 'Rice';
+    
+    // Support secondary crop if registered
+    const crop2Wrap = document.getElementById('harvest_crop2_wrap');
+    if (p && p.multiple_crops && p.second_crop) {
+      crop2Wrap.style.display = 'block';
+      document.getElementById('harvest_crop2_name').value = p.second_crop;
+    } else {
+      crop2Wrap.style.display = 'none';
+    }
+
     document.getElementById('harvest_panel').style.display = 'block';
   } catch (err) {
-    alert('Error connecting to server. Please check your network and try again.');
+    alert('Error connecting to server.');
   }
 }
 
-async function searchFarmerHistory() {
-  const appNo = document.getElementById('history_search_input').value.trim();
+async function searchEmbeddedFarmerHistory() {
+  const appNo = document.getElementById('embedded_history_search_input').value.trim();
   if (!appNo) return alert('Please enter application number');
 
+  const container = document.getElementById('embedded_history_results');
+  container.innerHTML = `<div class="muted mini">Querying records...</div>`;
+  container.style.display = 'block';
+
   try {
-    const res = await fetch(`/api/procurement/farmer-details/${encodeURIComponent(appNo)}`);
+    const res = await fetch(`/api/farmer-details/${encodeURIComponent(appNo)}`);
     const data = await res.json();
-    const container = document.getElementById('history_results');
     if (!data.success) {
-      container.innerHTML = `<p style="color:red;">${data.error}</p>`;
-      container.style.display = 'block';
+      container.innerHTML = `<div style="padding:14px; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; color:#b91c1c;">${data.error}</div>`;
       return;
     }
 
@@ -422,28 +752,55 @@ async function searchFarmerHistory() {
     const h = data.harvesting;
 
     container.innerHTML = `
-      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:16px; border-radius:8px;">
-        <h4 style="margin:0 0 8px 0; color:#1e293b;">Farmer Details (App No: ${f.app_no})</h4>
-        <div><strong>Name:</strong> ${f.name} &bull; <strong>Mobile:</strong> ${f.mobile} &bull; <strong>Status:</strong> <span class="badge badge-completed">${f.status}</span></div>
-        <div><strong>Location:</strong> ${f.village}, ${f.district}, ${f.state} &bull; <strong>Land:</strong> ${f.land_decimal} dec</div>
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:18px; border-radius:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px;">
+          <div>
+            <h4 style="margin:0; font-size:16px; color:#0f172a;">${f.name} (App #${f.app_no})</h4>
+            <div class="mini muted">Mobile: ${f.mobile} &bull; Location: ${f.village}, ${f.district}, ${f.state} &bull; Area: ${f.land_decimal} dec</div>
+          </div>
+          <span class="badge ${f.status === 'Completed' ? 'badge-completed' : (f.status === 'Declined' ? 'badge-declined' : 'badge-verified')}">
+            ${f.status}
+          </span>
+        </div>
+        
         <hr style="margin:12px 0; border:none; border-top:1px dashed #cbd5e1;">
 
-        <h5 style="margin:4px 0;">1. Officer Verification</h5>
-        <div>Status: ${v && v.verified ? 'Verified ✅' : 'Pending'} &bull; Preferred Crop: ${v && v.preference_crop ? v.preference_crop : '—'}</div>
+        <!-- 2-Crops Details Breakdown -->
+        <h5 style="margin:0 0 8px 0; color:#1e293b;">🌾 Two-Crops Harvesting &amp; Payout Details:</h5>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:14px;">
+          
+          <!-- Crop 1 Details -->
+          <div style="background:#fff; padding:12px; border-radius:8px; border:1px solid #fed7aa;">
+            <div style="font-weight:700; color:#c2410c; margin-bottom:4px;">1. Primary Crop</div>
+            <div><strong>Crop Name:</strong> ${h && h.crop1_name ? h.crop1_name : (p ? p.crop_name : '—')}</div>
+            <div><strong>Quantity:</strong> ${h ? h.quantity : 'Pending'}</div>
+            <div><strong>Amount Received:</strong> ₹${h ? (h.amount || '0') : '0'}</div>
+          </div>
 
-        <h5 style="margin:8px 0 4px 0;">2. Plowing</h5>
-        <div>Crop: ${p ? p.crop_name : 'N/A'} &bull; Approx Product: ${p ? p.quantity_approx : 'N/A'}</div>
+          <!-- Crop 2 Details -->
+          <div style="background:#fff; padding:12px; border-radius:8px; border:1px solid #fef08a;">
+            <div style="font-weight:700; color:#854d0e; margin-bottom:4px;">2. Secondary Crop</div>
+            <div><strong>Crop Name:</strong> ${h && h.crop2_name ? h.crop2_name : (p && p.second_crop ? p.second_crop : 'None')}</div>
+            <div><strong>Quantity:</strong> ${h && h.crop2_quantity ? h.crop2_quantity : (p && p.multiple_crops ? 'Pending' : 'N/A')}</div>
+            <div><strong>Amount Received:</strong> ₹${h && h.crop2_amount ? h.crop2_amount : '0'}</div>
+          </div>
 
-        <h5 style="margin:8px 0 4px 0;">3. Seed Giving Details</h5>
-        ${s ? `<div>Seed Given: <strong>${s.seed_amount_kg} kg</strong> &bull; Price: ₹${s.price} &bull; Mode: ${s.payment_mode} &bull; Date:${s.given_at}</div>` : '<div class="muted mini">No seed distribution recorded yet.</div>'}
+        </div>
 
-        <h5 style="margin:8px 0 4px 0;">4. Harvesting &amp; Transfer</h5>
-        ${h ? `<div>Harvest Quantity: <strong>${h.quantity}</strong> &bull; Quality:${h.quality} &bull; Amount Transferred: ₹${h.amount} &bull; Status:${h.status}</div>` : '<div class="muted mini">Harvesting record pending.</div>'}
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #f1f5f9;">
+            <strong>Verification Result:</strong><br>
+            ${v && v.verified ? `<span style="color:#16a34a;">Verified ✅</span> &bull; Crop: ${v.preference_crop || '—'}` : '<span class="muted">Pending / Not Verified</span>'}
+          </div>
+          <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #f1f5f9;">
+            <strong>Seed Distributed:</strong><br>
+            ${s ? `${s.seed_amount_kg} kg &bull; Paid: ₹${s.price} (${s.payment_mode})` : '<span class="muted">Pending</span>'}
+          </div>
+        </div>
       </div>
     `;
-    container.style.display = 'block';
   } catch (err) {
-    alert('Error connecting to server.');
+    container.innerHTML = `<div style="padding:14px; background:#fef2f2; color:#b91c1c; border-radius:6px;">Network error connecting to the server.</div>`;
   }
 }
 </script>

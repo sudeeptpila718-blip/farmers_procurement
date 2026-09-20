@@ -110,28 +110,57 @@
 
 {% block extra_scripts %}
 <script>
-const districtData = {{ states | tojson }};
-
-function loadDistricts() {
-  const state = document.getElementById('state-select').value;
+// Primary: Load districts dynamically via the API endpoint
+async function loadDistricts() {
+  const stateSelect = document.getElementById('state-select');
   const districtSelect = document.getElementById('district-select');
-  districtSelect.innerHTML = '';
-  const list = districtData[state] || [];
-  if (list.length === 0) {
+  const state = stateSelect.value.trim();
+
+  districtSelect.innerHTML = '<option value="">-- Select District --</option>';
+
+  if (!state) {
     districtSelect.innerHTML = '<option value="">-- Select State First --</option>';
     return;
   }
-  districtSelect.innerHTML = '<option value="">-- Select District --</option>' +
-    list.map(d => `<option value="${d}">${d}</option>`).join('');
+
+  try {
+    const res = await fetch('/api/districts/' + encodeURIComponent(state));
+    const districts = await res.json();
+
+    if (districts && districts.length > 0) {
+      districtSelect.innerHTML = '<option value="">-- Select District --</option>';
+      districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d;
+        opt.textContent = d;
+        districtSelect.appendChild(opt);
+      });
+    } else {
+      districtSelect.innerHTML = '<option value="">No districts found for this state</option>';
+    }
+  } catch (err) {
+    console.error('Failed to fetch districts:', err);
+    districtSelect.innerHTML = '<option value="">Error loading districts</option>';
+  }
 }
 
 function toggleLand(hasLand) {
-  document.getElementById('land-details').style.display = hasLand ? 'block' : 'none';
+  const details = document.getElementById('land-details');
+  if (details) details.style.display = hasLand ? 'block' : 'none';
 }
 
 function toggleOtherBank() {
   const val = document.getElementById('bank-choice').value;
-  document.getElementById('other-bank-wrap').style.display = (val === 'Others') ? 'block' : 'none';
+  const otherWrap = document.getElementById('other-bank-wrap');
+  if (otherWrap) otherWrap.style.display = (val === 'Others') ? 'block' : 'none';
 }
+
+// Ensure districts load if the state was pre-selected on page reload
+document.addEventListener('DOMContentLoaded', () => {
+  const stateVal = document.getElementById('state-select').value;
+  if (stateVal) {
+    loadDistricts();
+  }
+});
 </script>
 {% endblock %}
