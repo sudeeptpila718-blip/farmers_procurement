@@ -110,7 +110,7 @@
 
 {% block extra_scripts %}
 <script>
-const districtData = {{ states | tojson }};
+const districtData = JSON.parse('{{ states | tojson | safe }}');
 
 function loadDistricts() {
   const state = document.getElementById('state-select').value;
