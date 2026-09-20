@@ -85,7 +85,7 @@
     <p class="mini muted" style="margin:6px 0 12px 0;">Enter the farmer application number to view their verified plowing details and process seed distribution.</p>
 
     <div style="display:flex; gap:8px;">
-      <input type="text" id="seed_app_no_input" placeholder="Enter 4-digit App No. (e.g. 1340)" maxlength="4" style="flex:1;">
+      <input type="text" id="seed_app_no_input" placeholder="Enter App No. (e.g. 1340)" maxlength="10" style="flex:1;">
       <button type="button" class="btn btn-green btn-sm" onclick="fetchSeedFarmer()">Fetch Details</button>
     </div>
 
@@ -121,7 +121,7 @@
     <p class="mini muted" style="margin:6px 0 12px 0;">Enter application number to record final crop yield and transfer funds to the farmer.</p>
 
     <div style="display:flex; gap:8px;">
-      <input type="text" id="harvest_app_no_input" placeholder="Enter 4-digit App No." maxlength="4" style="flex:1;">
+      <input type="text" id="harvest_app_no_input" placeholder="Enter App No." maxlength="10" style="flex:1;">
       <button type="button" class="btn btn-secondary btn-sm" onclick="fetchHarvestFarmer()">Fetch Farmer</button>
     </div>
 
@@ -148,7 +148,7 @@
 
 </div>
 
-<!-- Active Farmers in Procurement (Completed are hidden and accessible in History) -->
+<!-- Active Farmers in Procurement -->
 <div class="section-title"><span class="emoji">👨‍🌾</span> 1. Farmers in Active Procurement</div>
 <div class="table-wrap card">
   <table>
@@ -194,6 +194,7 @@
             {% elif f['status']=='Verification Officer Assigned' %}badge-verify
             {% elif f['status']=='Verified' %}badge-verified
             {% elif f['status']=='Social Point Assigned' %}badge-social
+            {% elif f['status']=='Seed Distribution Done' %}badge-verified
             {% elif f['status']=='Completed' %}badge-completed
             {% else %}badge-app{% endif %}">{{ f['status'] }}</span>
         </td>
@@ -295,6 +296,7 @@
                 {% elif p['status'] == 'Verification Officer Assigned' %}badge-verify
                 {% elif p['status'] == 'Verified' %}badge-verified
                 {% elif p['status'] == 'Social Point Assigned' %}badge-social
+                {% elif p['status'] == 'Seed Distribution Done' %}badge-verified
                 {% else %}badge-app{% endif %}">
                 {{ p['status'] }}
               </span>
@@ -331,86 +333,118 @@ async function fetchSeedFarmer() {
   const appNo = document.getElementById('seed_app_no_input').value.trim();
   if (!appNo) return alert('Please enter application number');
 
-  const res = await fetch(`/api/procurement/farmer-details/${appNo}`);
-  const data = await res.json();
-  if (!data.success) return alert(data.error);
+  try {
+    const res = await fetch(`/api/procurement/farmer-details/${encodeURIComponent(appNo)}`);
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Farmer not found.');
+      return;
+    }
 
-  const f = data.farmer;
-  const p = data.plowing;
-  const v = data.verification;
+    // Duplicate check: if seed giving was already finalized
+    if (data.seed_giving) {
+      document.getElementById('seed_giving_panel').style.display = 'none';
+      alert('Completed for this Application number');
+      return;
+    }
 
-  let summaryHtml = `
-    <strong>Application No:</strong> ${f.app_no} | <strong>Name:</strong> ${f.name} | <strong>Mobile:</strong> ${f.mobile}<br>
-    <strong>Kishan ID:</strong> ${f.kishan_id} | <strong>Aadhaar:</strong> ${f.aadhar}<br>
-    <strong>Verification Status:</strong> ${v && v.verified ? '<span style="color:green;">Verified ✅</span>' : '<span style="color:red;">Not Fully Verified</span>'}<br>
-    <strong>Officer Preferred Crop:</strong> ${v && v.preference_crop ? v.preference_crop : '—'}<br>
-    <strong>Farmer Plowing Crop:</strong> ${p ? p.crop_name : 'N/A'} (Est. Qty: ${p ? p.quantity_approx : 'N/A'})
-  `;
-  document.getElementById('seed_farmer_summary').innerHTML = summaryHtml;
-  document.getElementById('seed_amount_kg_field').value = data.auto_seed_kg;
-  document.getElementById('seed_submit_form').action = `/procurement/seed-giving-save/${f.app_no}`;
-  document.getElementById('seed_giving_panel').style.display = 'block';
+    const f = data.farmer;
+    const p = data.plowing;
+    const v = data.verification;
+
+    let summaryHtml = `
+      <strong>Application No:</strong> ${f.app_no} | <strong>Name:</strong> ${f.name} | <strong>Mobile:</strong> ${f.mobile}<br>
+      <strong>Kishan ID:</strong> ${f.kishan_id} | <strong>Aadhaar:</strong> ${f.aadhar}<br>
+      <strong>Verification Status:</strong> ${v && v.verified ? '<span style="color:green;font-weight:bold;">Verified ✅</span>' : '<span style="color:red;">Not Fully Verified</span>'}<br>
+      <strong>Officer Preferred Crop:</strong> ${v && v.preference_crop ? v.preference_crop : '—'}<br>
+      <strong>Farmer Plowing Crop:</strong> ${p ? p.crop_name : 'N/A'} (Est. Qty: ${p ? p.quantity_approx : 'N/A'})
+    `;
+    document.getElementById('seed_farmer_summary').innerHTML = summaryHtml;
+    document.getElementById('seed_amount_kg_field').value = data.auto_seed_kg || '';
+    document.getElementById('seed_submit_form').action = `/procurement/seed-giving-save/${f.app_no}`;
+    document.getElementById('seed_giving_panel').style.display = 'block';
+  } catch (err) {
+    alert('Error connecting to server. Please check your network and try again.');
+  }
 }
 
 async function fetchHarvestFarmer() {
   const appNo = document.getElementById('harvest_app_no_input').value.trim();
   if (!appNo) return alert('Please enter application number');
 
-  const res = await fetch(`/api/procurement/farmer-details/${appNo}`);
-  const data = await res.json();
-  if (!data.success) return alert(data.error);
+  try {
+    const res = await fetch(`/api/procurement/farmer-details/${encodeURIComponent(appNo)}`);
+    const data = await res.json();
+    if (!data.success) {
+      alert(data.error || 'Farmer not found.');
+      return;
+    }
 
-  const f = data.farmer;
-  const p = data.plowing;
-  document.getElementById('harvest_farmer_summary').innerHTML = `
-    <strong>Farmer:</strong> ${f.name} (App No: ${f.app_no})<br>
-    <strong>Mobile:</strong> ${f.mobile} | <strong>Crop:</strong> ${p ? p.crop_name : '—'}<br>
-    <strong>Status:</strong> ${f.status}
-  `;
-  document.getElementById('harvest_hidden_app_no').value = f.app_no;
-  document.getElementById('harvest_panel').style.display = 'block';
+    // Duplicate check: if harvesting was already completed
+    if (data.harvesting && data.harvesting.status === 'Transferred') {
+      document.getElementById('harvest_panel').style.display = 'none';
+      alert('Completed for this Application number');
+      return;
+    }
+
+    const f = data.farmer;
+    const p = data.plowing;
+    document.getElementById('harvest_farmer_summary').innerHTML = `
+      <strong>Farmer:</strong> ${f.name} (App No: ${f.app_no})<br>
+      <strong>Mobile:</strong> ${f.mobile} | <strong>Crop:</strong> ${p ? p.crop_name : '—'}<br>
+      <strong>Status:</strong> ${f.status}
+    `;
+    document.getElementById('harvest_hidden_app_no').value = f.app_no;
+    document.getElementById('harvest_panel').style.display = 'block';
+  } catch (err) {
+    alert('Error connecting to server. Please check your network and try again.');
+  }
 }
 
 async function searchFarmerHistory() {
   const appNo = document.getElementById('history_search_input').value.trim();
   if (!appNo) return alert('Please enter application number');
 
-  const res = await fetch(`/api/procurement/farmer-details/${appNo}`);
-  const data = await res.json();
-  const container = document.getElementById('history_results');
-  if (!data.success) {
-    container.innerHTML = `<p style="color:red;">${data.error}</p>`;
+  try {
+    const res = await fetch(`/api/procurement/farmer-details/${encodeURIComponent(appNo)}`);
+    const data = await res.json();
+    const container = document.getElementById('history_results');
+    if (!data.success) {
+      container.innerHTML = `<p style="color:red;">${data.error}</p>`;
+      container.style.display = 'block';
+      return;
+    }
+
+    const f = data.farmer;
+    const v = data.verification;
+    const p = data.plowing;
+    const s = data.seed_giving;
+    const h = data.harvesting;
+
+    container.innerHTML = `
+      <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:16px; border-radius:8px;">
+        <h4 style="margin:0 0 8px 0; color:#1e293b;">Farmer Details (App No: ${f.app_no})</h4>
+        <div><strong>Name:</strong> ${f.name} &bull; <strong>Mobile:</strong> ${f.mobile} &bull; <strong>Status:</strong> <span class="badge badge-completed">${f.status}</span></div>
+        <div><strong>Location:</strong> ${f.village}, ${f.district}, ${f.state} &bull; <strong>Land:</strong> ${f.land_decimal} dec</div>
+        <hr style="margin:12px 0; border:none; border-top:1px dashed #cbd5e1;">
+
+        <h5 style="margin:4px 0;">1. Officer Verification</h5>
+        <div>Status: ${v && v.verified ? 'Verified ✅' : 'Pending'} &bull; Preferred Crop: ${v && v.preference_crop ? v.preference_crop : '—'}</div>
+
+        <h5 style="margin:8px 0 4px 0;">2. Plowing</h5>
+        <div>Crop: ${p ? p.crop_name : 'N/A'} &bull; Approx Product: ${p ? p.quantity_approx : 'N/A'}</div>
+
+        <h5 style="margin:8px 0 4px 0;">3. Seed Giving Details</h5>
+        ${s ? `<div>Seed Given: <strong>${s.seed_amount_kg} kg</strong> &bull; Price: ₹${s.price} &bull; Mode: ${s.payment_mode} &bull; Date:${s.given_at}</div>` : '<div class="muted mini">No seed distribution recorded yet.</div>'}
+
+        <h5 style="margin:8px 0 4px 0;">4. Harvesting &amp; Transfer</h5>
+        ${h ? `<div>Harvest Quantity: <strong>${h.quantity}</strong> &bull; Quality:${h.quality} &bull; Amount Transferred: ₹${h.amount} &bull; Status:${h.status}</div>` : '<div class="muted mini">Harvesting record pending.</div>'}
+      </div>
+    `;
     container.style.display = 'block';
-    return;
+  } catch (err) {
+    alert('Error connecting to server.');
   }
-
-  const f = data.farmer;
-  const v = data.verification;
-  const p = data.plowing;
-  const s = data.seed_giving;
-  const h = data.harvesting;
-
-  container.innerHTML = `
-    <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:16px; border-radius:8px;">
-      <h4 style="margin:0 0 8px 0; color:#1e293b;">Farmer Details (App No: ${f.app_no})</h4>
-      <div><strong>Name:</strong> ${f.name} &bull; <strong>Mobile:</strong> ${f.mobile} &bull; <strong>Status:</strong> <span class="badge badge-completed">${f.status}</span></div>
-      <div><strong>Location:</strong> ${f.village}, ${f.district}, ${f.state} &bull; <strong>Land:</strong> ${f.land_decimal} dec</div>
-      <hr style="margin:12px 0; border:none; border-top:1px dashed #cbd5e1;">
-
-      <h5 style="margin:4px 0;">1. Officer Verification</h5>
-      <div>Status: ${v && v.verified ? 'Verified ✅' : 'Pending'} &bull; Preferred Crop: ${v && v.preference_crop ? v.preference_crop : '—'}</div>
-
-      <h5 style="margin:8px 0 4px 0;">2. Plowing</h5>
-      <div>Crop: ${p ? p.crop_name : 'N/A'} &bull; Approx Product: ${p ? p.quantity_approx : 'N/A'}</div>
-
-      <h5 style="margin:8px 0 4px 0;">3. Seed Giving Details</h5>
-      ${s ? `<div>Seed Given: <strong>${s.seed_amount_kg} kg</strong> &bull; Price: ₹${s.price} &bull; Mode: ${s.payment_mode} &bull; Date:${s.given_at}</div>` : '<div class="muted mini">No seed distribution recorded yet.</div>'}
-
-      <h5 style="margin:8px 0 4px 0;">4. Harvesting &amp; Transfer</h5>
-      ${h ? `<div>Harvest Quantity: <strong>${h.quantity}</strong> &bull; Quality:${h.quality} &bull; Amount Transferred: ₹${h.amount} &bull; Status:${h.status}</div>` : '<div class="muted mini">Harvesting record pending.</div>'}
-    </div>
-  `;
-  container.style.display = 'block';
 }
 </script>
 {% endblock %}
