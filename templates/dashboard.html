@@ -46,12 +46,6 @@
     border: 1px solid #c8e6c9;
   }
 
-  .farmer-quick-stats {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
   .stat-pill {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
@@ -80,15 +74,6 @@
     top: 20px;
   }
 
-  .sidebar-nav .nav-heading {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-    padding: 8px 12px 4px 12px;
-  }
-
   .sidebar-nav .nav-item {
     display: flex;
     align-items: center;
@@ -115,11 +100,6 @@
     background: var(--primary-light);
     color: var(--primary-accent);
     border-color: #bbf7d0;
-  }
-
-  .sidebar-nav .nav-item .icon {
-    font-size: 18px;
-    line-height: 1;
   }
 
   .dashboard-content {
@@ -157,9 +137,6 @@
     font-size: 17px;
     font-weight: 700;
     color: #1e293b;
-    display: flex;
-    align-items: center;
-    gap: 8px;
   }
 
   .meta-grid-3 {
@@ -176,71 +153,6 @@
     padding: 12px 14px;
   }
 
-  .meta-box .k {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
-  }
-
-  .meta-box .v {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-dark);
-  }
-
-  .doc-vault-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-top: 14px;
-  }
-
-  .doc-vault-item {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .doc-vault-item .doc-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #334155;
-    margin-bottom: 8px;
-  }
-
-  .new-season-banner {
-    background: linear-gradient(135deg, #14532d 0%, #166534 100%);
-    color: #ffffff;
-    padding: 20px 24px;
-    border-radius: 12px;
-    margin-bottom: 22px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 12px rgba(20, 83, 45, 0.15);
-  }
-
-  .new-season-banner h4 {
-    margin: 0 0 6px 0;
-    font-size: 18px;
-    color: #ffffff;
-  }
-
-  .new-season-banner p {
-    margin: 0;
-    font-size: 13px;
-    color: #dcfce7;
-    max-width: 650px;
-    line-height: 1.5;
-  }
-
   .charts-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -253,13 +165,6 @@
     border-radius: 10px;
     padding: 18px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-  }
-
-  .chart-card h4 {
-    margin: 0 0 14px 0;
-    font-size: 14px;
-    font-weight: 700;
-    color: #334155;
   }
 
   .chart-container-inner {
@@ -276,14 +181,6 @@
       position: static;
       flex-direction: row;
       flex-wrap: wrap;
-    }
-    .sidebar-nav .nav-item {
-      flex: 1 1 calc(50% - 6px);
-    }
-    .new-season-banner {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 14px;
     }
   }
 </style>
@@ -313,7 +210,6 @@
 </div>
 {% endif %}
 
-<!-- Identity Card -->
 <div class="farmer-identity-card">
   <div class="farmer-meta-group">
     <div class="farmer-avatar">🌾</div>
@@ -340,49 +236,40 @@
   </div>
 </div>
 
-<!-- Main Split Container -->
 <div class="dashboard-layout">
   
-  <!-- Left Side Vertical Navigation (1: Farmers Cycle, 2: Application Status, 3: Booking Slots) -->
   <aside class="sidebar-nav">
-    <div class="nav-heading">Lifecycle Stages</div>
+    <div class="mini muted" style="padding:4px 12px; font-weight:700;" data-i18n="nav_lifecycle">LIFECYCLE STAGES</div>
     
     <button type="button" class="nav-item active" onclick="showTab('cycle', this)">
-      <span class="icon">🔄</span>
-      <span data-i18n="tab_cycle">Farmers Cycle</span>
+      <span>🔄</span> <span data-i18n="tab_cycle">Farmers Cycle</span>
     </button>
 
     <button type="button" class="nav-item" onclick="showTab('status', this)">
-      <span class="icon">📌</span>
-      <span data-i18n="tab_status">Application Status</span>
+      <span>📌</span> <span data-i18n="tab_status">Application Status</span>
     </button>
 
     <button type="button" class="nav-item" onclick="showTab('slots', this)">
-      <span class="icon">🗓️</span>
-      <span data-i18n="tab_slots">Booking Slots</span>
+      <span>🗓️</span> <span data-i18n="tab_slots">Booking Slots</span>
     </button>
 
-    <div class="nav-heading" style="margin-top:12px;">Data &amp; Documents</div>
+    <div class="mini muted" style="padding:12px 12px 4px 12px; font-weight:700;" data-i18n="nav_data_docs">DATA &amp; DOCUMENTS</div>
     <button type="button" class="nav-item" onclick="showTab('info', this)">
-      <span class="icon">📊</span>
-      <span data-i18n="tab_info">Information</span>
+      <span>📊</span> <span data-i18n="tab_info">Information</span>
     </button>
     <button type="button" class="nav-item" onclick="showTab('application', this)">
-      <span class="icon">📄</span>
-      <span data-i18n="tab_app">View Application</span>
+      <span>📄</span> <span data-i18n="tab_app">View Application</span>
     </button>
   </aside>
 
-  <!-- Right Side Interactive Panels -->
   <main class="dashboard-content">
 
-    <!-- Start New Season Farming Banner -->
     {% if farmer['status'] == 'Completed' %}
-    <div class="new-season-banner">
+    <div style="background: linear-gradient(135deg, #14532d 0%, #166534 100%); color:#fff; padding:20px 24px; border-radius:12px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center;">
       <div>
-        <h4 data-i18n="start_new_cycle_title">🌱 Start Next Crop Cycle (New Season)</h4>
-        <p data-i18n="start_new_cycle_desc">
-          Your previous harvest is complete! Land verification is certified and automatically retained. You can start your next seasonal cultivation right now.
+        <h4 style="margin:0 0 6px 0; color:#fff;" data-i18n="start_new_cycle_title">🌱 Start Next Crop Cycle (New Season)</h4>
+        <p style="margin:0; font-size:13px; color:#dcfce7;" data-i18n="start_new_cycle_desc">
+          Your previous harvest is complete! Land verification is retained. Start your next seasonal cultivation right now.
         </p>
       </div>
       <form method="POST" action="{{ url_for('start_new_cycle') }}" style="margin:0;">
@@ -393,15 +280,14 @@
     </div>
     {% endif %}
     
-    <!-- 1. FARMERS CYCLE PANEL (Default Active) -->
+    <!-- 1. FARMERS CYCLE PANEL -->
     <div id="tab-cycle" class="tab-panel active">
       
-      <!-- Verification Officer Card -->
       <div class="info-card" style="margin-top:0;">
         <div class="card-header-bar">
-          <h3 data-i18n="sec_officer">🧑‍💼 Verification Officer Assignment</h3>
+          <h3 data-i18n="sec_officer">Verification Officer</h3>
           {% if officer %}
-            <span class="badge badge-verified">Assigned &amp; Confirmed</span>
+            <span class="badge badge-verified" data-i18n="badge_assigned_confirmed">Assigned &amp; Confirmed</span>
           {% else %}
             <span class="badge badge-verify" data-i18n="officer_pending">Pending Assignment</span>
           {% endif %}
@@ -410,33 +296,30 @@
         {% if officer %}
           <div class="meta-grid-3">
             <div class="meta-box">
-              <div class="k" data-i18n="officer_name">Officer Name</div>
-              <div class="v">{{ officer['officer_name'] }}</div>
+              <div class="mini muted" data-i18n="officer_name">Officer Name</div>
+              <div><strong>{{ officer['officer_name'] }}</strong></div>
             </div>
             <div class="meta-box">
-              <div class="k" data-i18n="officer_contact">Phone Number</div>
-              <div class="v"><a href="tel:{{ officer['officer_contact'] }}" style="color:#2563eb; text-decoration:none;">📞 {{ officer['officer_contact'] }}</a></div>
+              <div class="mini muted" data-i18n="officer_contact">Contact</div>
+              <div><a href="tel:{{ officer['officer_contact'] }}" style="color:#2563eb; text-decoration:none;">📞 {{ officer['officer_contact'] }}</a></div>
             </div>
             <div class="meta-box">
-              <div class="k">Designation</div>
-              <div class="v">Agricultural Field Inspector</div>
+              <div class="mini muted" data-i18n="officer_designation">Designation</div>
+              <div data-i18n="officer_designation_val">Field Inspector</div>
             </div>
           </div>
         {% else %}
-          <div class="mini muted" style="padding:14px; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1; text-align:center;" data-i18n="officer_pending">
-            Not yet assigned. This will appear once the Procurement Centre confirms an officer.
+          <div class="mini muted" style="padding:14px; background:#f8fafc; border-radius:8px; border:1px dashed #cbd5e1; text-align:center;" data-i18n="officer_pending_admin_note">
+            Not yet assigned. Assigned by Kishan Seva Kendra once you book a Land Verification slot.
           </div>
         {% endif %}
       </div>
 
-      <!-- Land Inspection Report -->
       <div class="info-card">
         <div class="card-header-bar">
-          <h3 data-i18n="sec_verification">🔍 Land &amp; Credential Verification Report</h3>
+          <h3 data-i18n="sec_verification">Land Verification Result</h3>
           {% if verification and verification['verified'] %}
             <span class="badge badge-verified" data-i18n="verified_tag">Inspection Passed ✅</span>
-          {% elif verification %}
-            <span class="badge badge-declined" data-i18n="not_verified_tag">Not Verified</span>
           {% else %}
             <span class="badge badge-app" data-i18n="no_verification">Awaiting Inspection</span>
           {% endif %}
@@ -445,27 +328,16 @@
         {% if verification %}
           <div class="meta-grid-3">
             <div class="meta-box">
-              <div class="k" data-i18n="land_decimal">Inspected Area</div>
-              <div class="v">{{ farmer['land_decimal'] }} Decimals</div>
+              <div class="mini muted" data-i18n="land_decimal">Land Area</div>
+              <div>{{ farmer['land_decimal'] }} <span data-i18n="decimals_unit">Decimals</span></div>
             </div>
             <div class="meta-box">
-              <div class="k" data-i18n="officer_name">Certified Officer</div>
-              <div class="v">{{ verification['officer_name'] }}</div>
+              <div class="mini muted" data-i18n="officer_name">Certified Officer</div>
+              <div>{{ verification['officer_name'] }}</div>
             </div>
             <div class="meta-box">
-              <div class="k" data-i18n="pref_crop">Recommended Suitable Crop</div>
-              <div class="v"><strong style="color:#15803d;">{{ verification['preference_crop'] or 'Standard Cereal' }}</strong></div>
-            </div>
-          </div>
-
-          <div style="background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; margin-top:10px;">
-            <div class="mini" style="font-weight:700; margin-bottom:6px; color:#475569;">Verified Checks Breakdown:</div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap;">
-              <span class="badge badge-verified">Name: OK</span>
-              <span class="badge badge-verified">Mobile: OK</span>
-              <span class="badge badge-verified">Land Decimal: OK</span>
-              <span class="badge badge-verified">Aadhaar: OK</span>
-              <span class="badge badge-verified">Land Records: OK</span>
+              <div class="mini muted" data-i18n="verified_date">Verified Date</div>
+              <div>{{ verification['verified_at'] }}</div>
             </div>
           </div>
         {% else %}
@@ -473,59 +345,56 @@
         {% endif %}
       </div>
 
-      <!-- Plowing & Seed Allocation -->
-      {% if farmer['status'] in ['Verified', 'Social Point Assigned', 'Seed Distribution Done', 'Completed'] %}
+      {% if farmer['status'] in ['Verified', 'Transferred to Procurement', 'Received by Procurement', 'Seed Distribution Done', 'Completed'] %}
       <div class="info-card">
         <div class="card-header-bar">
-          <h3 data-i18n="sec_plowing">🚜 Plowing &amp; Seed Allocation</h3>
+          <h3 data-i18n="sec_plowing">🚜 Plowing</h3>
           {% if seed_giving %}
-            <span class="badge badge-completed">Distributed &amp; Settled</span>
+            <span class="badge badge-completed" data-i18n="status_distributed_settled">Distributed &amp; Settled</span>
           {% elif plowing %}
             <span class="badge badge-verified" data-i18n="plowing_locked_badge">Plowing Saved (Locked)</span>
           {% else %}
-            <span class="badge badge-app">Entry Required</span>
+            <span class="badge badge-app" data-i18n="badge_entry_required">Entry Required</span>
           {% endif %}
         </div>
 
         {% if plowing %}
           <div class="meta-grid-3">
             <div class="meta-box">
-              <div class="k" data-i18n="crop_name">Primary Crop</div>
-              <div class="v"><strong>{{ plowing['crop_name'] }}</strong></div>
+              <div class="mini muted" data-i18n="crop_name">Crop Name</div>
+              <div><strong>{{ plowing['crop_name'] }}</strong></div>
             </div>
             <div class="meta-box">
-              <div class="k" data-i18n="multi_crop_status">Multiple Crops</div>
-              <div class="v">{% if plowing['multiple_crops'] %}<span data-i18n="yes">Yes</span> ({{ plowing['second_crop'] }}){% else %}<span data-i18n="no">No</span>{% endif %}</div>
+              <div class="mini muted" data-i18n="multi_crop_status">Multiple Crops</div>
+              <div>{% if plowing['multiple_crops'] %}<span data-i18n="yes">Yes</span> ({{ plowing['second_crop'] }}){% else %}<span data-i18n="no">No</span>{% endif %}</div>
             </div>
             <div class="meta-box">
-              <div class="k" data-i18n="approx_qty">Estimated Production</div>
-              <div class="v">{{ plowing['quantity_approx'] }}</div>
+              <div class="mini muted" data-i18n="approx_qty">Approx. Quantity</div>
+              <div>{{ plowing['quantity_approx'] }}</div>
             </div>
           </div>
 
-          <!-- Subsidized Seed Distribution Receipt -->
           <div style="margin-top:14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:16px;">
             <div style="font-weight:700; color:#15803d; margin-bottom:8px; display:flex; justify-content:space-between;">
-              <span>🌱 Subsidized Seed Distribution Receipt</span>
-              {% if seed_giving %}<span class="badge badge-verified">Complete</span>{% else %}<span class="badge badge-verify">Pending Pickup</span>{% endif %}
+              <span data-i18n="subsidized_seed_receipt">🌱 Subsidized Seed Distribution Receipt</span>
+              {% if seed_giving %}<span class="badge badge-verified" data-i18n="status_complete">Complete</span>{% else %}<span class="badge badge-verify" data-i18n="status_pending_pickup">Pending Pickup</span>{% endif %}
             </div>
 
             {% if seed_giving %}
               <div class="meta-grid-3" style="margin-bottom:0;">
-                <div><span class="mini muted">Allotted Seed Weight:</span><br><strong>{{ seed_giving['seed_amount_kg'] }} kg</strong></div>
-                <div><span class="mini muted">Total Invoiced Amount:</span><br><strong>₹{{ seed_giving['price'] }}</strong></div>
-                <div><span class="mini muted">Payment Mechanism:</span><br><strong>{{ seed_giving['payment_mode'] }}</strong></div>
+                <div><span class="mini muted" data-i18n="allotted_seed_lbl">Allotted Seed:</span><br><strong>{{ seed_giving['seed_amount_kg'] }} kg</strong></div>
+                <div><span class="mini muted" data-i18n="amount_paid_lbl">Amount Paid:</span><br><strong>₹{{ seed_giving['price'] }}</strong></div>
+                <div><span class="mini muted" data-i18n="payment_mode_lbl">Payment Mode:</span><br><strong>{{ seed_giving['payment_mode'] }}</strong></div>
               </div>
             {% else %}
-              <div class="mini muted">Plowing details saved. You may now book a slot to pick up subsidized seeds under "Booking Slots".</div>
+              <div class="mini muted" data-i18n="seed_pickup_unlocked_note">Plowing details saved. Once received by the Procurement Centre, book your seed pickup appointment under "Booking Slots".</div>
             {% endif %}
           </div>
         {% else %}
-          <!-- Plowing Input Form -->
           <form method="POST" action="{{ url_for('plowing_submit') }}">
             <div class="grid grid-2">
               <div>
-                <label data-i18n="crop_name">Primary Crop Selection *</label>
+                <label data-i18n="crop_name">Crop Name *</label>
                 <select name="crop_name" required style="width:100%;">
                   {% for c in crops %}
                     <option value="{{ c }}">{{ c }}</option>
@@ -534,63 +403,55 @@
               </div>
 
               <div>
-                <label data-i18n="approx_qty">Approximate Expected Yield *</label>
-                <input type="text" name="quantity_approx" placeholder="e.g. 500 kg" required style="width:100%;">
+                <label data-i18n="approx_qty">Approx. Quantity of Product *</label>
+                <input type="text" name="quantity_approx" placeholder="e.g. 500 kg" data-i18n-ph="qty_placeholder" required style="width:100%;">
               </div>
             </div>
 
             <div class="checkbox-row" style="margin:12px 0;">
               <input type="checkbox" id="multi" name="multiple_crops" onchange="toggleSecondaryCrop(this.checked)">
-              <label for="multi" data-i18n="multi_crop_label">Are you planting complementary / multiple crops?</label>
+              <label for="multi" data-i18n="multi_crop_label">Growing multiple crops?</label>
             </div>
 
             <div id="secondary-crop-wrap" style="display:none; margin-bottom:14px;">
-              <label data-i18n="second_crop">Secondary Crop Name</label>
+              <label data-i18n="second_crop">Second Crop (if multiple)</label>
               <input type="text" id="second_crop_input" name="second_crop" placeholder="e.g. Mustard, Pulses" style="width:100%;">
             </div>
 
-            <button type="submit" class="btn btn-primary btn-sm" data-i18n="btn_save">Save Plowing Details</button>
+            <button type="submit" class="btn btn-primary btn-sm" data-i18n="btn_save">Save</button>
           </form>
         {% endif %}
       </div>
 
-      <!-- Stage 4: Harvest Settlement (With Two-Crops Breakdown) -->
       <div class="info-card">
         <div class="card-header-bar">
-          <h3 data-i18n="sec_harvesting">🌾 Crop Harvest &amp; Procurement Disbursement</h3>
+          <h3 data-i18n="sec_harvesting">🌾 Harvesting</h3>
           {% if harvesting and harvesting['status'] == 'Transferred' %}
             <span class="badge badge-completed" data-i18n="status_transferred">Payment Disbursed ✅</span>
-          {% elif harvesting %}
-            <span class="badge badge-verify" data-i18n="status_pending">Processing</span>
           {% else %}
-            <span class="badge badge-app" data-i18n="harvest_pending">Pending Harvest</span>
+            <span class="badge badge-app" data-i18n="status_pending">Pending Harvest</span>
           {% endif %}
         </div>
 
         {% if harvesting %}
           <div class="meta-grid-3">
             <div class="meta-box">
-              <div class="k">Primary Crop ({{ harvesting['crop1_name'] or 'Crop 1' }})</div>
-              <div class="v"><strong>{{ harvesting['quantity'] }}</strong> (₹{{ harvesting['amount'] }})</div>
+              <div class="mini muted"><span data-i18n="primary_crop_lbl">Primary Crop</span> ({{ harvesting['crop1_name'] or 'Crop 1' }})</div>
+              <div><strong>{{ harvesting['quantity'] }}</strong> (₹{{ harvesting['amount'] }})</div>
             </div>
             {% if harvesting['crop2_name'] and harvesting['crop2_quantity'] %}
             <div class="meta-box">
-              <div class="k">Secondary Crop ({{ harvesting['crop2_name'] }})</div>
-              <div class="v"><strong>{{ harvesting['crop2_quantity'] }}</strong> (₹{{ harvesting['crop2_amount'] }})</div>
+              <div class="mini muted"><span data-i18n="secondary_crop_lbl">Secondary Crop</span> ({{ harvesting['crop2_name'] }})</div>
+              <div><strong>{{ harvesting['crop2_quantity'] }}</strong> (₹{{ harvesting['crop2_amount'] }})</div>
             </div>
             {% endif %}
             <div class="meta-box">
-              <div class="k">Total Disbursed Value</div>
-              <div class="v"><strong style="color:#15803d; font-size:16px;">₹{{ harvesting['total_amount'] or harvesting['amount'] }}</strong></div>
+              <div class="mini muted" data-i18n="harvest_amount">Total Value Received</div>
+              <div><strong style="color:#15803d; font-size:16px;">₹{{ harvesting['total_amount'] or harvesting['amount'] }}</strong></div>
             </div>
           </div>
-          <div class="mini muted" style="margin-top:6px;">
-            Certified Quality: <strong>{{ harvesting['quality'] }}</strong> &bull; Settlement Status: <strong>{{ harvesting['status'] }}</strong>
-          </div>
         {% else %}
-          <p class="muted mini" data-i18n="harvest_pending">
-            Harvest records and compensation transfers will be officially recorded by the Procurement Centre upon delivery.
-          </p>
+          <p class="muted mini" data-i18n="harvest_pending">Harvesting details will be filled in by the Procurement Centre once your slot is complete.</p>
         {% endif %}
       </div>
       {% endif %}
@@ -601,13 +462,9 @@
     <div id="tab-status" class="tab-panel">
       <div class="info-card" style="margin-top:0;">
         <div class="card-header-bar">
-          <h3 data-i18n="app_status">📌 Procurement Pipeline Progress</h3>
-          <span class="badge badge-verified">Stage {{ status_index + 1 }} of {{ status_steps|length }}</span>
+          <h3 data-i18n="app_status">Application Status</h3>
+          <span class="badge badge-verified"><span data-i18n="stage_lbl">Stage</span> {{ status_index + 1 }} / {{ status_steps|length }}</span>
         </div>
-        
-        <p class="mini muted" style="margin-bottom: 20px;">
-          Track your registration chronologically from local Seva Kendra approval to procurement harvesting disbursement.
-        </p>
 
         <div class="stepper-wrapper">
           <div class="stepper">
@@ -615,36 +472,14 @@
               {% set idx = loop.index0 %}
               {% set is_active = (farmer['status'] != 'Declined' and idx == status_index) %}
               {% set is_done = (farmer['status'] != 'Declined' and idx < status_index) %}
-              {% set is_declined = (farmer['status'] == 'Declined' and idx == 0) %}
               
-              <div class="step-node {% if is_done %}done{% elif is_active %}active{% elif is_declined %}declined{% endif %}">
+              <div class="step-node {% if is_done %}done{% elif is_active %}active{% endif %}">
                 <div class="dot-indicator">
                   {% if is_done %}✓{% elif is_active %}<span class="active-dot"></span>{% endif %}
                 </div>
                 <div class="step-label" data-i18n="step_{{ idx }}">{{ step }}</div>
               </div>
             {% endfor %}
-          </div>
-        </div>
-
-        {% if farmer['status'] == 'Declined' %}
-          <div class="flash flash-error" style="margin-top:20px;" data-i18n="declined_msg">
-            Your application was declined at the Kishan Seva stage. Please contact your nearest Panchayat office for review.
-          </div>
-        {% endif %}
-
-        <div class="meta-grid-3" style="margin-top:24px;">
-          <div class="meta-box">
-            <div class="k">Application Registered</div>
-            <div class="v">{{ farmer['created_at'] or 'Recorded' }}</div>
-          </div>
-          <div class="meta-box">
-            <div class="k">Kishan Seva Approval</div>
-            <div class="v">{{ farmer['transferred_at'] or 'Pending' }}</div>
-          </div>
-          <div class="meta-box">
-            <div class="k">Current Status</div>
-            <div class="v"><strong class="badge badge-verified">{{ farmer['status'] }}</strong></div>
           </div>
         </div>
       </div>
@@ -654,49 +489,43 @@
     <div id="tab-slots" class="tab-panel">
       <div class="info-card" style="margin-top:0;">
         <div class="card-header-bar">
-          <h3 data-i18n="booking_slots">🗓️ Appointment &amp; Slot Management</h3>
-          <span class="badge badge-app">3 Workflow Stages</span>
+          <h3 data-i18n="booking_slots">Booking Slots</h3>
         </div>
-        <p class="mini muted" style="margin-bottom: 20px;">Book appointments sequentially: Land Verification ➔ Seed Collection ➔ Harvesting Intake.</p>
 
         <div class="grid grid-3" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
           
-          <!-- Step 1: Land Verification Slot -->
-          <div class="icon-tile {% if farmer['status'] in ['Procurement Centre','Verification Officer Assigned','Verified','Social Point Assigned','Seed Distribution Done','Completed'] %}unlocked{% else %}locked{% endif %}">
+          <!-- Slot 1: Land Verification Slot -->
+          <div class="icon-tile unlocked">
             <div class="big-emoji">🧑‍🌾</div>
-            <h4 data-i18n="land_verification">1. Land Verification</h4>
-            {% if farmer['status'] in ['Procurement Centre','Verification Officer Assigned','Verified','Social Point Assigned','Seed Distribution Done','Completed'] %}
-              {% if my_slots.get('verification') %}
-                <p style="margin:10px 0;"><span data-i18n="booked">Booked Schedule</span>: <br><strong>{{ my_slots['verification']['slot_date'] }} <span data-i18n="at_time">at</span> {{ my_slots['verification']['slot_time'] }}</strong></p>
-                <span class="badge badge-verified" data-i18n="slot_confirmed">Confirmed (Locked)</span>
-              {% else %}
-                <form method="POST" action="{{ url_for('book_slot') }}">
-                  <input type="hidden" name="slot_type" value="verification">
-                  <div class="slot-options">
-                    {% for opt in verification_slot_options %}
-                      <label class="slot-chip">
-                        <input type="radio" name="slot_id" value="{{ opt['id'] }}" required style="display:none;" onclick="this.closest('form').querySelectorAll('.slot-chip').forEach(c=>c.classList.remove('selected'));this.closest('label').classList.add('selected');">
-                        {{ opt['slot_date'] }} &bull; {{ opt['slot_time'] }}
-                      </label>
-                    {% endfor %}
-                  </div>
-                  <button type="submit" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" data-i18n="book_slot">Confirm Slot Selection</button>
-                </form>
-              {% endif %}
+            <h4 data-i18n="land_verification">Land Verification</h4>
+            {% if my_slots.get('verification') %}
+              <p style="margin:10px 0;"><span data-i18n="booked">Booked</span>: <br><strong>{{ my_slots['verification']['slot_date'] }} <span data-i18n="at_time">at</span> {{ my_slots['verification']['slot_time'] }}</strong></p>
+              <span class="badge badge-verified" data-i18n="slot_confirmed">Confirmed (Locked)</span>
             {% else %}
-              <p class="lock-note" data-i18n="lock_note_verify">🔒 Unlocks once Kishan Seva Kendra transfers registration to the Procurement Centre.</p>
+              <form method="POST" action="{{ url_for('book_slot') }}">
+                <input type="hidden" name="slot_type" value="verification">
+                <div class="slot-options">
+                  {% for opt in verification_slot_options %}
+                    <label class="slot-chip">
+                      <input type="radio" name="slot_id" value="{{ opt['id'] }}" required style="display:none;" onclick="this.closest('form').querySelectorAll('.slot-chip').forEach(c=>c.classList.remove('selected'));this.closest('label').classList.add('selected');">
+                      {{ opt['slot_date'] }} &bull; {{ opt['slot_time'] }}
+                    </label>
+                  {% endfor %}
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" data-i18n="book_slot">Confirm Slot</button>
+              </form>
             {% endif %}
           </div>
 
-          <!-- Step 2: Seed Booking Slot -->
-          {% set land_verified = (verification and verification['verified']) or farmer['status'] in ['Verified', 'Social Point Assigned', 'Seed Distribution Done', 'Completed'] %}
-          <div class="icon-tile {% if land_verified and plowing %}unlocked{% else %}locked{% endif %}">
+          <!-- Slot 2: Seed Booking Slot -->
+          {% set can_book_seed = farmer['status'] in ['Received by Procurement', 'Seed Distribution Done', 'Completed'] and plowing %}
+          <div class="icon-tile {% if can_book_seed %}unlocked{% else %}locked{% endif %}">
             <div class="big-emoji">🌱</div>
-            <h4 data-i18n="seed_booking">2. Seed Collection</h4>
-            {% if land_verified and plowing %}
+            <h4 data-i18n="seed_booking">Seed Booking</h4>
+            {% if can_book_seed %}
               {% if my_slots.get('seed') %}
-                <p style="margin:10px 0;"><span data-i18n="booked">Booked Schedule</span>: <br><strong>{{ my_slots['seed']['slot_date'] }} <span data-i18n="at_time">at</span> {{ my_slots['seed']['slot_time'] }}</strong></p>
-                <span class="badge badge-verified" data-i18n="slot_confirmed">Seed Appointment Confirmed</span>
+                <p style="margin:10px 0;"><span data-i18n="booked">Booked</span>: <br><strong>{{ my_slots['seed']['slot_date'] }} <span data-i18n="at_time">at</span> {{ my_slots['seed']['slot_time'] }}</strong></p>
+                <span class="badge badge-verified" data-i18n="slot_confirmed">Seed Slot Confirmed</span>
               {% else %}
                 <form method="POST" action="{{ url_for('book_slot') }}">
                   <input type="hidden" name="slot_type" value="seed">
@@ -711,22 +540,24 @@
                   <button type="submit" class="btn btn-primary btn-sm btn-block" style="margin-top:10px;" data-i18n="book_slot">Confirm Seed Slot</button>
                 </form>
               {% endif %}
-            {% elif land_verified and not plowing %}
-              <p class="lock-note" style="color:var(--danger);" data-i18n="lock_note_plowing_first">🔒 Save your Plowing details under "Farmers Cycle" to book seeds.</p>
+            {% elif farmer['status'] == 'Transferred to Procurement' %}
+              <p class="lock-note" data-i18n="lock_note_receive_first">🔒 Unlocks once the Procurement Centre clicks "Receive Farmer".</p>
+            {% elif not plowing and farmer['status'] in ['Received by Procurement', 'Seed Distribution Done', 'Completed'] %}
+              <p class="lock-note" style="color:var(--danger);" data-i18n="lock_note_plowing_first">🔒 Complete and save your Plowing information below to unlock seed booking.</p>
             {% else %}
-              <p class="lock-note" data-i18n="lock_note_seed">🔒 Unlocks after Land Verification is approved by officer.</p>
+              <p class="lock-note" data-i18n="lock_note_seed_pipeline">🔒 Unlocks after Land Verification is completed and transferred to Procurement.</p>
             {% endif %}
           </div>
 
-          <!-- Step 3: Harvesting Slot Booking -->
+          <!-- Slot 3: Harvesting Slot Booking -->
           {% set seed_distributed = (seed_giving is not none) or farmer['status'] in ['Seed Distribution Done', 'Completed'] %}
           <div class="icon-tile {% if seed_distributed %}unlocked{% else %}locked{% endif %}">
             <div class="big-emoji">🌾</div>
-            <h4>3. Harvesting Intake</h4>
+            <h4 data-i18n="harvesting_slot_title">Harvesting Intake</h4>
             {% if seed_distributed %}
               {% if my_slots.get('harvesting') %}
-                <p style="margin:10px 0;"><span data-i18n="booked">Booked Schedule</span>: <br><strong>{{ my_slots['harvesting']['slot_date'] }} <span data-i18n="at_time">at</span> {{ my_slots['harvesting']['slot_time'] }}</strong></p>
-                <span class="badge badge-completed">Harvest Intake Confirmed</span>
+                <p style="margin:10px 0;"><span data-i18n="booked">Booked</span>: <br><strong>{{ my_slots['harvesting']['slot_date'] }} <span data-i18n="at_time">at</span> {{ my_slots['harvesting']['slot_time'] }}</strong></p>
+                <span class="badge badge-completed" data-i18n="slot_confirmed">Harvest Slot Confirmed</span>
               {% else %}
                 <form method="POST" action="{{ url_for('book_slot') }}">
                   <input type="hidden" name="slot_type" value="harvesting">
@@ -738,11 +569,11 @@
                       </label>
                     {% endfor %}
                   </div>
-                  <button type="submit" class="btn btn-secondary btn-sm btn-block" style="margin-top:10px;">Confirm Harvesting Slot</button>
+                  <button type="submit" class="btn btn-secondary btn-sm btn-block" style="margin-top:10px;" data-i18n="book_slot">Confirm Harvesting Slot</button>
                 </form>
               {% endif %}
             {% else %}
-              <p class="lock-note">🔒 Unlocks after Seed Distribution is completed by procurement center.</p>
+              <p class="lock-note" data-i18n="lock_note_harvest_first">🔒 Unlocks after Seed Distribution is recorded by procurement center.</p>
             {% endif %}
           </div>
 
@@ -750,12 +581,12 @@
       </div>
     </div>
 
-    <!-- 4. INFORMATION & ANALYTICS PANEL (With Dynamic Graphs & Historical Table) -->
+    <!-- 4. INFORMATION & ANALYTICS PANEL -->
     <div id="tab-info" class="tab-panel">
       <div class="info-card" style="margin-top:0;">
         <div class="card-header-bar">
-          <h3 data-i18n="sec_analytics">📊 Agricultural Yield &amp; Season Analytics</h3>
-          <span class="badge badge-verified">Saved Seasons</span>
+          <h3 data-i18n="sec_analytics">📊 Crop Analytics</h3>
+          <span class="badge badge-verified" data-i18n="saved_seasons_badge">Saved Seasons</span>
         </div>
         
         <div class="charts-grid" id="chartsContainer">
@@ -779,21 +610,19 @@
           </div>
         </div>
 
-        <!-- Seasonal Historical Table Ledger -->
         <div style="margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-          <h4 style="margin: 0 0 10px 0; color: #1e293b;">📋 Seasonal Crops Records Ledger</h4>
+          <h4 style="margin: 0 0 10px 0; color: #1e293b;" data-i18n="seasonal_crops_ledger_title">📋 Seasonal Crops Records Ledger</h4>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
-                  <th>Season</th>
-                  <th>Crop Variety</th>
-                  <th>Yield Quantity (Quintals)</th>
-                  <th>Disbursed Value (₹)</th>
+                  <th data-i18n="th_season">Season</th>
+                  <th data-i18n="th_crop_variety">Crop Variety</th>
+                  <th data-i18n="th_yield_qty">Yield Quantity (Quintals)</th>
+                  <th data-i18n="th_disbursed_val">Disbursed Value (₹)</th>
                 </tr>
               </thead>
-              <tbody id="analyticsTableBody">
-                <!-- Dynamically populated or rendered -->
+              <tbody>
                 {% for a in analytics %}
                 <tr>
                   <td><strong>{{ a.season }}</strong></td>
@@ -803,10 +632,10 @@
                 </tr>
                 {% else %}
                 <tr>
-                  <td><strong>Current Season</strong></td>
-                  <td>{{ farmer['preference_crop'] or 'Rice' }}</td>
-                  <td>Under Processing</td>
-                  <td>Pending Final Harvest</td>
+                  <td><strong data-i18n="current_season_txt">Current Season</strong></td>
+                  <td>{{ plowing['crop_name'] if plowing else 'Active Crop' }}</td>
+                  <td data-i18n="under_cultivation_txt">Under Cultivation</td>
+                  <td data-i18n="pending_final_harvest_txt">Pending Final Harvest</td>
                 </tr>
                 {% endfor %}
               </tbody>
@@ -820,7 +649,7 @@
     <div id="tab-application" class="tab-panel">
       <div class="info-card" style="margin-top:0;">
         <div class="card-header-bar">
-          <h3 data-i18n="sec_app_details">📄 Certified Application Dossier</h3>
+          <h3 data-i18n="sec_app_details">📄 Your Application</h3>
           <span class="badge badge-app">#{{ farmer['app_no'] }}</span>
         </div>
 
@@ -829,61 +658,22 @@
             <h4 style="margin:0 0 10px 0; color:#334155; font-size:14px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;" data-i18n="cat_personal">
               👤 Personal Details
             </h4>
-            <div class="info-row"><span class="k" data-i18n="farmer_name">Full Name</span><span class="v">{{ farmer['name'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="mobile_no">Mobile Number</span><span class="v">{{ farmer['mobile'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="kishan_id">Kishan Card ID</span><span class="v">{{ farmer['kishan_id'] or '—' }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="aadhar_no">Aadhaar Record</span><span class="v">[Aadhaar on File]</span></div>
+            <div class="info-row"><span class="k" data-i18n="farmer_name">Name</span><span class="v">{{ farmer['name'] }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="mobile_no">Mobile</span><span class="v">{{ farmer['mobile'] }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="gender_lbl">Gender</span><span class="v">{{ farmer['gender'] or '—' }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="category_lbl">Category</span><span class="v">{{ farmer['category'] or '—' }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="kishan_id">Kishan ID</span><span class="v">{{ farmer['kishan_id'] or '—' }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="aadhar_no">Aadhar</span><span class="v">[Aadhaar on File]</span></div>
           </div>
 
           <div>
             <h4 style="margin:0 0 10px 0; color:#334155; font-size:14px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;" data-i18n="cat_land">
-              🚜 Farmland Specifications
+              🚜 Land Details
             </h4>
-            <div class="info-row"><span class="k" data-i18n="has_land">Land Ownership</span><span class="v">{{ farmer['has_land'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="land_type">Farming Model</span><span class="v">{{ farmer['land_type'] or 'Own Cultivation' }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="land_decimal">Total Area</span><span class="v"><strong>{{ farmer['land_decimal'] }} Decimals</strong></span></div>
-            <div class="info-row"><span class="k">Plot Certified</span><span class="v">{% if verification and verification['verified'] %}<span data-i18n="yes">Yes</span>{% else %}<span data-i18n="no">No</span>{% endif %}</span></div>
+            <div class="info-row"><span class="k" data-i18n="has_land">Has Land</span><span class="v">{{ farmer['has_land'] }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="land_type">Type</span><span class="v">{{ farmer['land_type'] or 'Own Farming' }}</span></div>
+            <div class="info-row"><span class="k" data-i18n="land_decimal">Area (decimal)</span><span class="v"><strong>{{ farmer['land_decimal'] }} Decimals</strong></span></div>
           </div>
-        </div>
-
-        <div class="grid grid-2" style="gap:20px; margin-bottom:24px;">
-          <div>
-            <h4 style="margin:0 0 10px 0; color:#334155; font-size:14px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;" data-i18n="cat_address">
-              📍 Village &amp; Panchayat Address
-            </h4>
-            <div class="info-row"><span class="k" data-i18n="village">Village</span><span class="v">{{ farmer['village'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="panchayat">Gram Panchayat</span><span class="v">{{ farmer['panchayat'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="district">District</span><span class="v">{{ farmer['district'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="state">State</span><span class="v">{{ farmer['state'] }}</span></div>
-          </div>
-
-          <div>
-            <h4 style="margin:0 0 10px 0; color:#334155; font-size:14px; border-bottom:1px solid #f1f5f9; padding-bottom:6px;" data-i18n="cat_bank">
-              🏦 Banking &amp; Direct Transfer (DBT)
-            </h4>
-            <div class="info-row"><span class="k" data-i18n="bank_name">Bank Name</span><span class="v">{{ farmer['bank_name'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="bank_account">Account Number</span><span class="v">{{ farmer['bank_account'] }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="bank_ifsc">IFSC Code</span><span class="v"><code>{{ farmer['ifsc'] }}</code></span></div>
-            <div class="info-row"><span class="k">DBT Routing</span><span class="v"><span class="badge badge-verified">Enabled</span></span></div>
-          </div>
-        </div>
-
-        <h4 style="margin:0 0 10px 0; color:#334155; font-size:14px;" data-i18n="uploaded_docs">
-          🗂️ Official Document Credentials Vault
-        </h4>
-        <div class="doc-vault-grid">
-          {% for label, key, doc in [('Kishan Card', 'doc_kishan', farmer['kishan_doc']), ('Aadhaar Document', 'doc_aadhar', farmer['aadhar_doc']), ('Land Deeds / Khatian', 'doc_land', farmer['land_doc']), ('Bank Passbook', 'doc_bank', farmer['bank_doc'])] %}
-            <div class="doc-vault-item">
-              <div class="doc-title" data-i18n="{{ key }}">{{ label }}</div>
-              {% if doc %}
-                <a class="btn btn-secondary btn-sm btn-block" style="text-align:center; padding:6px 8px; font-size:12px;" href="{{ url_for('static', filename='uploads/' ~ doc) }}" target="_blank" data-i18n="view_file">
-                  View File ↗
-                </a>
-              {% else %}
-                <span class="mini muted" style="display:block; text-align:center; padding:6px 0;" data-i18n="not_uploaded">Not Provided</span>
-              {% endif %}
-            </div>
-          {% endfor %}
         </div>
       </div>
     </div>
@@ -915,92 +705,105 @@ const translations = {
     app_status: "Application Status",
     tab_status: "Application Status",
     tab_slots: "Booking Slots",
+    nav_lifecycle: "LIFECYCLE STAGES",
+    nav_data_docs: "DATA & DOCUMENTS",
     step_0: "Kishan Seva Kendra",
-    step_1: "Procurement Centre",
-    step_2: "Verification Officer Assigned",
-    step_3: "Verified",
-    step_4: "Social Point Assigned",
+    step_1: "Verification Officer Assigned",
+    step_2: "Verified",
+    step_3: "Transferred to Procurement",
+    step_4: "Received by Procurement",
     step_5: "Seed Distribution Done",
     step_6: "Completed",
     declined_msg: "Your application was declined at the Kishan Seva stage. Please contact your local Kishan Seva office for details.",
     booking_slots: "Booking Slots",
-    land_verification: "Land Verification Appointment",
-    seed_booking: "Seed Collection (Social Point)",
+    land_verification: "Land Verification",
+    seed_booking: "Seed Booking",
+    harvesting_slot_title: "Harvesting Intake",
     booked: "Booked",
     at_time: "at",
-    book_slot: "Confirm Slot Selection",
-    slot_confirmed: "Appointment Confirmed (Locked)",
-    lock_note_verify: "🔒 Unlocks once Kishan Seva Kendra transfers registration to the Procurement Centre.",
-    lock_note_seed: "🔒 Unlocks after Land Verification is approved by officer.",
-    lock_note_plowing_first: "🔒 Save your Plowing specifications under 'Farmers Cycle' to unlock seed reservation.",
+    book_slot: "Confirm Slot",
+    slot_confirmed: "Slot Confirmed (Locked)",
+    lock_note_receive_first: "🔒 Unlocks once the Procurement Centre clicks 'Receive Farmer'.",
+    lock_note_plowing_first: "🔒 Complete and save your Plowing information below to unlock seed booking.",
+    lock_note_seed_pipeline: "🔒 Unlocks after Land Verification is completed and transferred to Procurement.",
+    lock_note_harvest_first: "🔒 Unlocks after Seed Distribution is recorded by procurement center.",
     tab_cycle: "Farmers Cycle",
     tab_info: "Information",
     tab_app: "View Application",
-    sec_officer: "Verification Officer Assignment",
+    sec_officer: "Verification Officer",
     officer_name: "Officer Name",
-    officer_contact: "Phone Number",
-    officer_pending: "Not yet assigned. This will appear once the Procurement Centre confirms an officer.",
-    sec_verification: "Land & Credential Verification Report",
-    farmer_name: "Full Name",
+    officer_contact: "Contact",
+    officer_designation: "Designation",
+    officer_designation_val: "Field Inspector",
+    badge_assigned_confirmed: "Assigned & Confirmed",
+    officer_pending: "Pending Assignment",
+    officer_pending_admin_note: "Not yet assigned. Assigned by Kishan Seva Kendra once you book a Land Verification slot.",
+    sec_verification: "Land Verification Result",
+    farmer_name: "Name",
     mobile_no: "Mobile Number",
-    land_decimal: "Land Area",
-    kishan_id: "Kishan Card ID",
-    pref_crop: "Recommended Suitable Crop",
+    gender_lbl: "Gender",
+    category_lbl: "Category",
+    land_decimal: "Land (decimal)",
+    decimals_unit: "Decimals",
+    verified_date: "Verified Date",
+    kishan_id: "Kishan ID",
     result: "Result",
-    verified_tag: "Verified ✅",
+    verified_tag: "Inspection Passed ✅",
     not_verified_tag: "Not Verified",
-    no_verification: "No official inspection audit recorded yet.",
-    sec_plowing: "🚜 Plowing & Seed Allocation",
-    crop_name: "Primary Crop Selection",
-    multi_crop_label: "Are you planting complementary / multiple crops?",
+    no_verification: "No verification result yet.",
+    sec_plowing: "🚜 Plowing",
+    status_distributed_settled: "Distributed & Settled",
+    badge_entry_required: "Entry Required",
+    crop_name: "Crop Name",
+    multi_crop_label: "Growing multiple crops?",
     multi_crop_status: "Multiple Crops",
-    second_crop: "Secondary Crop Name",
-    approx_qty: "Estimated Production",
+    second_crop: "Second Crop (if multiple)",
+    approx_qty: "Approx. Quantity of Product",
     qty_placeholder: "e.g. 500 kg",
-    btn_save: "Save Plowing Details",
-    plowing_locked_badge: "Plowing Details Saved (Locked)",
-    slot_not_booked: "Not booked yet (Book under Booking Slots)",
+    btn_save: "Save",
+    plowing_locked_badge: "Plowing Saved (Locked)",
+    subsidized_seed_receipt: "🌱 Subsidized Seed Distribution Receipt",
+    status_complete: "Complete",
+    status_pending_pickup: "Pending Pickup",
+    allotted_seed_lbl: "Allotted Seed:",
+    amount_paid_lbl: "Amount Paid:",
+    payment_mode_lbl: "Payment Mode:",
+    seed_pickup_unlocked_note: "Plowing details saved. Once received by the Procurement Centre, book your seed pickup appointment under 'Booking Slots'.",
     yes: "Yes",
     no: "No",
-    sec_harvesting: "🌾 Crop Harvest & Procurement Disbursement",
-    seed_slot_warning: "Book your seed slot above to proceed toward harvesting.",
-    harvest_qty: "Total Procured Quantity",
-    harvest_quality: "Quality Grade Certified",
-    harvest_amount: "Total Disbursed Value",
+    sec_harvesting: "🌾 Harvesting",
+    primary_crop_lbl: "Primary Crop",
+    secondary_crop_lbl: "Secondary Crop",
+    harvest_qty: "Quantity",
+    harvest_quality: "Quality",
+    harvest_amount: "Total Value Received",
     status: "Status",
-    status_transferred: "Transferred",
-    status_pending: "Pending",
-    harvest_pending: "Harvest records and compensation transfers will be officially recorded by the Procurement Centre upon delivery.",
-    sec_analytics: "📊 Agricultural Yield & Season Analytics",
+    status_transferred: "Payment Disbursed ✅",
+    status_pending: "Pending Harvest",
+    harvest_pending: "Harvesting details will be filled in by the Procurement Centre once your slot is complete.",
+    sec_analytics: "📊 Crop Analytics",
+    saved_seasons_badge: "Saved Seasons",
     chart_bar: "Quantity by Season (Bar)",
     chart_line: "Trend Over Seasons (Line)",
     chart_pie: "Crop Share (Pie)",
-    analytics_empty: "Detailed yield analytics will populate after your first season harvest records are compiled by the procurement center.",
-    sec_app_details: "📄 Certified Application Dossier",
+    seasonal_crops_ledger_title: "📋 Seasonal Crops Records Ledger",
+    th_season: "Season",
+    th_crop_variety: "Crop Variety",
+    th_yield_qty: "Yield Quantity (Quintals)",
+    th_disbursed_val: "Disbursed Value (₹)",
+    current_season_txt: "Current Season",
+    under_cultivation_txt: "Under Cultivation",
+    pending_final_harvest_txt: "Pending Final Harvest",
+    sec_app_details: "📄 Your Application",
     cat_personal: "Personal Details",
-    cat_land: "Farmland Specifications",
-    cat_address: "Village & Panchayat Address",
-    cat_bank: "Banking & Direct Transfer (DBT)",
-    aadhar_no: "Aadhaar Record",
-    has_land: "Land Ownership",
-    land_type: "Farming Model",
-    state: "State",
-    district: "District",
-    village: "Village",
-    panchayat: "Gram Panchayat",
-    bank_account: "Account Number",
-    bank_ifsc: "IFSC Code",
-    bank_name: "Bank Name",
-    uploaded_docs: "Official Document Credentials Vault",
-    doc_kishan: "Kishan Card",
-    doc_aadhar: "Aadhaar Document",
-    doc_land: "Land Deeds / Khatian",
-    doc_bank: "Bank Passbook",
-    view_file: "View File ↗",
-    not_uploaded: "Not Provided",
-    start_new_cycle_title: "Start Next Crop Cycle (New Season)",
-    start_new_cycle_desc: "Your previous harvest is complete! Land verification is certified and automatically retained. You can start your next seasonal cultivation right now.",
-    btn_start_new_cycle: "Start New Season Farming ➔"
+    cat_land: "Land Details",
+    aadhar_no: "Aadhar",
+    has_land: "Has Land",
+    land_type: "Type",
+    start_new_cycle_title: "🌱 Start Next Crop Cycle (New Season)",
+    start_new_cycle_desc: "Your previous harvest is complete! Land verification is retained. Start your next seasonal cultivation right now.",
+    btn_start_new_cycle: "Start New Season Farming ➔",
+    stage_lbl: "Stage"
   },
   hi: {
     dashboard_title: "किसान पोर्टल",
@@ -1011,92 +814,105 @@ const translations = {
     app_status: "आवेदन की स्थिति",
     tab_status: "आवेदन की स्थिति",
     tab_slots: "स्लॉट बुकिंग",
+    nav_lifecycle: "प्रक्रिया चरण",
+    nav_data_docs: "डेटा एवं दस्तावेज़",
     step_0: "किसान सेवा केंद्र",
-    step_1: "खरीद केंद्र",
-    step_2: "सत्यापन अधिकारी नियुक्त",
-    step_3: "सत्यापित",
-    step_4: "सोशल पॉइंट आवंटित",
+    step_1: "सत्यापन अधिकारी नियुक्त",
+    step_2: "सत्यापित",
+    step_3: "खरीद केंद्र को स्थानांतरित",
+    step_4: "खरीद केंद्र द्वारा प्राप्त",
     step_5: "बीज वितरण संपन्न",
     step_6: "पूर्ण",
     declined_msg: "आपका आवेदन किसान सेवा चरण में अस्वीकार कर दिया गया था। विवरण के लिए अपने स्थानीय कार्यालय से संपर्क करें।",
     booking_slots: "स्लॉट बुकिंग",
-    land_verification: "भूमि सत्यापन अपॉइंटमेंट",
-    seed_booking: "बीज संग्रह (सोशल पॉइंट)",
+    land_verification: "भूमि सत्यापन",
+    seed_booking: "बीज बुकिंग",
+    harvesting_slot_title: "कटाई स्लॉट",
     booked: "बुक किया गया",
     at_time: "समय",
-    book_slot: "स्लॉट चयन की पुष्टि करें",
-    slot_confirmed: "अपॉइंटमेंट कन्फर्म (लॉक्ড)",
-    lock_note_verify: "🔒 खरीद केंद्र द्वारा आपके पंजीकरण की पुष्टि के बाद अनलॉक होगा।",
-    lock_note_seed: "🔒 भूमि सत्यापन अधिकारी द्वारा सत्यापित होने के बाद अनलॉक होगा।",
-    lock_note_plowing_first: "🔒 बीज आरक्षण अनलॉक करने के लिए 'किसान चक्र' के तहत जुताई विवरण सहेजें।",
+    book_slot: "स्लॉट कन्फर्म करें",
+    slot_confirmed: "स्लॉट कन्फर्म (लॉक्ड)",
+    lock_note_receive_first: "🔒 खरीद केंद्र द्वारा 'प्राप्त' किए जाने के बाद अनलॉक होगा।",
+    lock_note_plowing_first: "🔒 बीज बुकिंग अनलॉक करने के लिए नीचे जुताई की जानकारी सहेजें।",
+    lock_note_seed_pipeline: "🔒 भूमि सत्यापन पूरा होने और खरीद केंद्र में स्थानांतरित होने के बाद अनलॉक होगा।",
+    lock_note_harvest_first: "🔒 खरीद केंद्र द्वारा बीज वितरण दर्ज किए जाने के बाद अनलॉक होगा।",
     tab_cycle: "किसान चक्र",
     tab_info: "जानकारी",
     tab_app: "आवेदन देखें",
-    sec_officer: "सत्यापन अधिकारी नियुक्ति",
+    sec_officer: "सत्यापन अधिकारी",
     officer_name: "अधिकारी का नाम",
-    officer_contact: "फ़ोन नंबर",
-    officer_pending: "अभी तक नियुक्त नहीं। खरीद केंद्र द्वारा अधिकारी की पुष्टि करने पर दिखाई देगा।",
-    sec_verification: "भूमि एवं दस्तावेज सत्यापन रिपोर्ट",
-    farmer_name: "पूरा नाम",
+    officer_contact: "संपर्क",
+    officer_designation: "पद",
+    officer_designation_val: "फील्ड इंस्पेक्टर",
+    badge_assigned_confirmed: "नियुक्त एवं कन्फर्म",
+    officer_pending: "नियुक्ति लंबित",
+    officer_pending_admin_note: "अभी तक नियुक्त नहीं। किसान सेवा केंद्र द्वारा स्लॉट बुक करने पर नियुक्त किया जाएगा।",
+    sec_verification: "भूमि सत्यापन परिणाम",
+    farmer_name: "नाम",
     mobile_no: "मोबाइल नंबर",
-    land_decimal: "भूमि क्षेत्र",
-    kishan_id: "किसान कार्ड आईडी",
-    pref_crop: "अनुशंसित उपयुक्त फसल",
+    gender_lbl: "लिंग",
+    category_lbl: "श्रेणी",
+    land_decimal: "भूमि (डेसिमल)",
+    decimals_unit: "डेसिमल",
+    verified_date: "सत्यापन तिथि",
+    kishan_id: "किसान आईडी",
     result: "परिणाम",
     verified_tag: "सत्यापित ✅",
     not_verified_tag: "सत्यापित नहीं",
-    no_verification: "अभी तक कोई आधिकारिक निरीक्षण दर्ज नहीं है।",
-    sec_plowing: "🚜 जुताई एवं बीज आवंटन",
-    crop_name: "प्राथमिक फसल चयन",
-    multi_crop_label: "क्या आप एकाधिक फसलें लगा रहे हैं?",
+    no_verification: "अभी तक कोई सत्यापन परिणाम नहीं।",
+    sec_plowing: "🚜 जुताई",
+    status_distributed_settled: "वितरित एवं पूर्ण",
+    badge_entry_required: "प्रविष्टि आवश्यक",
+    crop_name: "फसल का नाम",
+    multi_crop_label: "क्या आप एक से अधिक फसलें उगा रहे हैं?",
     multi_crop_status: "एकाधिक फसलें",
-    second_crop: "दूसरी फसल का नाम",
-    approx_qty: "अनुमानित उत्पादन",
+    second_crop: "दूसरी फसल (यदि एक से अधिक हों)",
+    approx_qty: "उत्पाद की अनुमानित मात्रा",
     qty_placeholder: "उदा. 500 किग्रा",
-    btn_save: "जुताई विवरण सहेजें",
-    plowing_locked_badge: "जुताई विवरण सहेजा गया (लॉक्ড)",
-    slot_not_booked: "अभी बुक नहीं हुआ",
+    btn_save: "सहेजें (Save)",
+    plowing_locked_badge: "जुताई विवरण सहेजा गया (लॉक्ड)",
+    subsidized_seed_receipt: "🌱 बीज वितरण रसीद",
+    status_complete: "पूर्ण",
+    status_pending_pickup: "प्राप्ति लंबित",
+    allotted_seed_lbl: "आवंटित बीज:",
+    amount_paid_lbl: "भुगतान राशि:",
+    payment_mode_lbl: "भुगतान मोड:",
+    seed_pickup_unlocked_note: "जुताई विवरण सहेजा गया। खरीद केंद्र द्वारा प्राप्त करने पर बीज स्लॉट बुक करें।",
     yes: "हाँ",
     no: "नहीं",
-    sec_harvesting: "🌾 फसल कटाई एवं खरीद भुगतान",
-    seed_slot_warning: "कटाई की ओर बढ़ने के लिए ऊपर बीज स्लॉट बुक करें।",
-    harvest_qty: "कुल खरीदी गई मात्रा",
-    harvest_quality: "प्रमाणित गुणवत्ता ग्रेड",
-    harvest_amount: "कुल भुगतान राशि",
+    sec_harvesting: "🌾 फसल कटाई",
+    primary_crop_lbl: "प्राथमिक फसल",
+    secondary_crop_lbl: "दूसरी फसल",
+    harvest_qty: "मात्रा",
+    harvest_quality: "गुणवत्ता",
+    harvest_amount: "प्राप्त कुल राशि",
     status: "स्थिति",
-    status_transferred: "हस्तांतरित",
-    status_pending: "लंबित",
-    harvest_pending: "डिलीवरी के बाद खरीद केंद्र द्वारा कटाई विवरण दर्ज किया जाएगा।",
-    sec_analytics: "📊 कृषि उत्पादन एवं सीजन विश्लेषण",
+    status_transferred: "भुगतान हस्तांतरित ✅",
+    status_pending: "लंबित कटाई",
+    harvest_pending: "स्लॉट पूरा होने पर खरीद केंद्र द्वारा कटाई विवरण भरा जाएगा।",
+    sec_analytics: "📊 फसल विश्लेषण",
+    saved_seasons_badge: "सुरक्षित सीजन",
     chart_bar: "सीजन अनुसार मात्रा (बार)",
     chart_line: "सीजन दर रुझान (लाइन)",
     chart_pie: "फसल हिस्सा (पाई)",
-    analytics_empty: "खरीद केंद्र द्वारा आंकड़े संकलित किए जाने पर विश्लेषण दिखाई देगा।",
-    sec_app_details: "📄 प्रमाणित आवेदन फ़ाइल",
+    seasonal_crops_ledger_title: "📋 मौसमी फसल रिकॉर्ड खाता",
+    th_season: "सीजन",
+    th_crop_variety: "फसल प्रकार",
+    th_yield_qty: "उत्पादन मात्रा (क्विंटल)",
+    th_disbursed_val: "हस्तांतरित राशि (₹)",
+    current_season_txt: "वर्तमान सीजन",
+    under_cultivation_txt: "खेती जारी है",
+    pending_final_harvest_txt: "अंतिम कटाई लंबित",
+    sec_app_details: "📄 आपका आवेदन",
     cat_personal: "व्यक्तिगत विवरण",
-    cat_land: "कृषि भूमि विवरण",
-    cat_address: "गाँव एवं पंचायत का पता",
-    cat_bank: "बैंकिंग एवं प्रत्यक्ष हस्तांतरण (DBT)",
-    aadhar_no: "आधार रिकॉर्ड",
-    has_land: "भूमि स्वामित्व",
-    land_type: "खेती मॉडल",
-    state: "राज्य",
-    district: "जिला",
-    village: "गाँव",
-    panchayat: "ग्राम पंचायत",
-    bank_account: "खाता संख्या",
-    bank_ifsc: "आईएफएससी कोड",
-    bank_name: "बैंक का नाम",
-    uploaded_docs: "आधिकारिक दस्तावेज़ वॉल्ट",
-    doc_kishan: "किसान कार्ड",
-    doc_aadhar: "आधार दस्तावेज़",
-    doc_land: "भूमि दस्तावेज़ / खतियान",
-    doc_bank: "बैंक पासबुक",
-    view_file: "फ़ाइल देखें ↗",
-    not_uploaded: "प्रदान नहीं किया गया",
-    start_new_cycle_title: "अगला फसल चक्र शुरू करें (नया सीजन)",
-    start_new_cycle_desc: "आपकी पिछली फसल पूरी हो चुकी है! आपकी भूमि का सत्यापन पहले से प्रमाणित है और रहेगा। आप तुरंत नई मौसमी खेती शुरू कर सकते हैं।",
-    btn_start_new_cycle: "नई सीजन खेती शुरू करें ➔"
+    cat_land: "भूमि विवरण",
+    aadhar_no: "आधार",
+    has_land: "क्या भूमि है",
+    land_type: "प्रकार",
+    start_new_cycle_title: "🌱 अगला फसल चक्र शुरू करें (नया सीजन)",
+    start_new_cycle_desc: "आपकी पिछली फसल पूरी हो चुकी है! भूमि सत्यापन सुरक्षित है। नई मौसमी खेती अभी शुरू करें।",
+    btn_start_new_cycle: "नई सीजन खेती शुरू करें ➔",
+    stage_lbl: "चरण"
   },
   bn: {
     dashboard_title: "কৃষক পোর্টাল",
@@ -1107,92 +923,105 @@ const translations = {
     app_status: "আবেদনের স্থিতি",
     tab_status: "আবেদনের স্থিতি",
     tab_slots: "স্লট বুকিং",
+    nav_lifecycle: "প্রক্রিয়া পর্যায়",
+    nav_data_docs: "নথি ও বিবরণ",
     step_0: "কিসান সেবা কেন্দ্র",
-    step_1: "ক্রয় কেন্দ্র",
-    step_2: "যাচাইকারী আধিকারিক নিযুক্ত",
-    step_3: "যাচাইকৃত",
-    step_4: "সোশ্যাল পয়েন্ট বরাদ্দ",
+    step_1: "যাচাইকারী আধিকারিক নিযুক্ত",
+    step_2: "যাচাইকৃত",
+    step_3: "ক্রয় কেন্দ্রে স্থানান্তরিত",
+    step_4: "ক্রয় কেন্দ্র দ্বারা গৃহীত",
     step_5: "বীজ বিতরণ সম্পন্ন",
     step_6: "সম্পন্ন",
-    declined_msg: "কিসান সেবা পর্যায়ে আপনার আবেদন প্রত্যাখ্যাত হয়েছে। বিস্তারিত তথ্যের জন্য স্থানীয় অফিসে যোগাযোগ করুন।",
+    declined_msg: "কিসান সেবা পর্যায়ে আপনার আবেদন প্রত্যাখ্যাত হয়েছে। বিস্তারিত তথ্যের জন্য স্থানীয় কিসান সেবা অফিসে যোগাযোগ করুন।",
     booking_slots: "স্লট বুকিং",
-    land_verification: "জমি যাচাইকরণ সময়সূচী",
-    seed_booking: "বীজ সংগ্রহ (সোশ্যাল পয়েন্ট)",
+    land_verification: "জমি যাচাইকরণ",
+    seed_booking: "বীজ বুকিং",
+    harvesting_slot_title: "ফসল তোলা স্লট",
     booked: "বুক করা হয়েছে",
     at_time: "সময়",
-    book_slot: "স্লট নির্বাচন নিশ্চিত করুন",
-    slot_confirmed: "সময়সূচী নিশ্চিত (লক)",
-    lock_note_verify: "🔒 ক্রয় কেন্দ্র আবেদন নিশ্চিত করার পর এটি আনলক হবে।",
-    lock_note_seed: "🔒 জমি যাচাই অনুমোদিত হওয়ার পর বীজ সংগ্রহ স্লট খুলবে।",
-    lock_note_plowing_first: "🔒 বীজ সংরক্ষণ আনলক করতে নিচে চাষের তথ্য সংরক্ষণ করুন।",
+    book_slot: "স্লট নিশ্চিত করুন",
+    slot_confirmed: "স্লট নিশ্চিত (লক)",
+    lock_note_receive_first: "🔒 ক্রয় কেন্দ্র গ্রহণ করার পর এটি আনলক হবে।",
+    lock_note_plowing_first: "🔒 বীজ বুকিং আনলক করতে নিচে চাষের তথ্য সংরক্ষণ করুন।",
+    lock_note_seed_pipeline: "🔒 জমি যাচাই সম্পন্ন এবং ক্রয় কেন্দ্রে স্থানান্তরের পর এটি আনলক হবে।",
+    lock_note_harvest_first: "🔒 ক্রয় কেন্দ্র বীজ বিতরণ নথিভুক্ত করার পর আনলক হবে।",
     tab_cycle: "কৃষক পর্যায়",
     tab_info: "তথ্য",
     tab_app: "আবেদন দেখুন",
-    sec_officer: "যাচাইকারী আধিকারিক নিয়োগ",
+    sec_officer: "যাচাইকারী আধিকারিক",
     officer_name: "আধিকারিকের নাম",
-    officer_contact: "ফোন নম্বর",
-    officer_pending: "এখনও নিযুক্ত হননি। ক্রয় কেন্দ্র নিশ্চিত করার পর প্রদর্শিত হবে।",
-    sec_verification: "জমি ও নথি যাচাই প্রতিবেদন",
-    farmer_name: "পূর্ণ নাম",
+    officer_contact: "যোগাযোগ",
+    officer_designation: "পদবী",
+    officer_designation_val: "ফিল্ড ইন্সপেক্টর",
+    badge_assigned_confirmed: "নিযুক্ত ও নিশ্চিত",
+    officer_pending: "নিয়োগ প্রক্রিয়াধীন",
+    officer_pending_admin_note: "এখনও নিযুক্ত হননি। জমি যাচাইকরণ স্লট বুক করার পর কিসান সেবা কেন্দ্র থেকে নিযুক্ত করা হবে।",
+    sec_verification: "জমি যাচাইকরণের ফলাফল",
+    farmer_name: "নাম",
     mobile_no: "মোবাইল নম্বর",
-    land_decimal: "জমির পরিমাণ",
-    kishan_id: "কিসান কার্ড আইডি",
-    pref_crop: "সুপারিশকৃত উপযুক্ত ফসল",
+    gender_lbl: "লিঙ্গ",
+    category_lbl: "শ্রেণী",
+    land_decimal: "জমি (ডেসিমেল)",
+    decimals_unit: "ডেসিমেল",
+    verified_date: "যাচাইয়ের তারিখ",
+    kishan_id: "কিসান আইডি",
     result: "ফলাফল",
     verified_tag: "যাচাইকৃত ✅",
     not_verified_tag: "যাচাই করা হয়নি",
-    no_verification: "এখনও কোনো আনুষ্ঠানিক পরিদর্শন ফলাফল নেই।",
-    sec_plowing: "🚜 জমি চাষ ও বীজ বরাদ্দ",
-    crop_name: "প্রধান ফসল নির্বাচন",
-    multi_crop_label: "একাধিক ফসল চাষ করছেন কি?",
+    no_verification: "এখনও কোনো যাচাইয়ের ফলাফল নেই।",
+    sec_plowing: "🚜 জমি চাষ",
+    status_distributed_settled: "বিতরণ ও নিষ্পত্তি সম্পন্ন",
+    badge_entry_required: "তথ্য প্রদান প্রয়োজন",
+    crop_name: "ফসলের নাম",
+    multi_crop_label: "একাধিক ফসল ফলাচ্ছেন?",
     multi_crop_status: "একাধিক ফসল",
-    second_crop: "দ্বিতীয় ফসলের নাম",
-    approx_qty: "আনুমানিক উৎপাদন",
+    second_crop: "দ্বিতীয় ফসল (যদি একাধিক হয়)",
+    approx_qty: "আনুমানিক পরিমাণ",
     qty_placeholder: "যেমন ৫০০ কেজি",
-    btn_save: "চাষের বিবরণ সংরক্ষণ করুন",
+    btn_save: "সংরক্ষণ করুন (Save)",
     plowing_locked_badge: "চাষের বিবরণ সংরক্ষিত (লক)",
-    slot_not_booked: "এখনও বুক করা হয়নি",
+    subsidized_seed_receipt: "🌱 বীজ বিতরণের রসিদ",
+    status_complete: "সম্পন্ন",
+    status_pending_pickup: "সংগ্রহ বাকি",
+    allotted_seed_lbl: "বরাদ্দকৃত বীজ:",
+    amount_paid_lbl: "পরিশোধিত মূল্য:",
+    payment_mode_lbl: "মূল্য পরিশোধ পদ্ধতি:",
+    seed_pickup_unlocked_note: "চাষের বিবরণ সংরক্ষিত। ক্রয় কেন্দ্র গ্রহণ করলে বীজ সংগ্রহের স্লট বুক করুন।",
     yes: "হ্যাঁ",
     no: "না",
-    sec_harvesting: "🌾 ফসল তোলা ও সরকারি ক্রয় পরিশোধ",
-    seed_slot_warning: "পরবর্তী প্রক্রিয়ার জন্য উপরে বীজের স্লট বুক করুন।",
-    harvest_qty: "মোট ক্রয়কৃত পরিমাণ",
-    harvest_quality: "প্রত্যয়িত মান",
-    harvest_amount: "মোট পরিশোধিত অর্থ",
+    sec_harvesting: "🌾 ফসল তোলা",
+    primary_crop_lbl: "প্রধান ফসল",
+    secondary_crop_lbl: "দ্বিতীয় ফসল",
+    harvest_qty: "পরিমাণ",
+    harvest_quality: "মান",
+    harvest_amount: "প্রাপ্ত মোট অর্থ",
     status: "স্থিতি",
-    status_transferred: "স্থানান্তরিত",
-    status_pending: "বিচারাধীন",
-    harvest_pending: "ফসল সরবরাহের পর ক্রয় কেন্দ্র থেকে বিবরণ ও অর্থ স্থানান্তর পূরণ করা হবে।",
-    sec_analytics: "📊 কৃষি উৎপাদন ও ঋতুভিত্তিক বিশ্লেষণ",
+    status_transferred: "অর্থ স্থানান্তরিত ✅",
+    status_pending: "ফসল তোলা বাকি",
+    harvest_pending: "স্লট সম্পন্ন হলে ক্রয় কেন্দ্র থেকে বিবরণ পূরণ করা হবে।",
+    sec_analytics: "📊 ফসল বিশ্লেষণ",
+    saved_seasons_badge: "সংরক্ষিত ঋতু",
     chart_bar: "ঋতু ভিত্তিক পরিমাণ (বার)",
     chart_line: "ধারাবাহিক পরিবর্তন (লাইন)",
     chart_pie: "ফসলের অনুপাত (পাই)",
-    analytics_empty: "ক্রয় কেন্দ্র থেকে তথ্য সংগ্রহ করার পর বিশ্লেষণ প্রদর্শিত হবে।",
-    sec_app_details: "📄 প্রত্যয়িত আবেদন পত্র",
-    cat_personal: "ব্যক্তিগত বিবরণ",
+    seasonal_crops_ledger_title: "📋 ঋতুভিত্তিক ফসল রেকর্ড",
+    th_season: "ঋতু",
+    th_crop_variety: "ফসলের প্রকার",
+    th_yield_qty: "ফলন পরিমাণ (কুইন্টাল)",
+    th_disbursed_val: "স্থানান্তরিত অর্থ (₹)",
+    current_season_txt: "বর্তমান ঋতু",
+    under_cultivation_txt: "চাষাবাদ চলছে",
+    pending_final_harvest_txt: "ফসল তোলা বাকি",
+    sec_app_details: "📄 আপনার আবেদন",
+    cat_personal: "ব্যক্তিগত তথ্য",
     cat_land: "জমির বিবরণ",
-    cat_address: "গ্রাম ও পঞ্চায়েত ঠিকানা",
-    cat_bank: "ব্যাংকিং ও সরাসরি স্থানান্তর (DBT)",
-    aadhar_no: "আধার রেকর্ড",
-    has_land: "জমির মালিকানা",
-    land_type: "চাষাবাদ মডেল",
-    state: "রাজ্য",
-    district: "জেলা",
-    village: "গ্রাম",
-    panchayat: "গ্রাম পঞ্চায়েত",
-    bank_account: "অ্যাকাউন্ট নম্বর",
-    bank_ifsc: "আইএফএসসি কোড",
-    bank_name: "ব্যাংকের নাম",
-    uploaded_docs: "সরকারি নথি ভল্ট",
-    doc_kishan: "কিসান কার্ড",
-    doc_aadhar: "আধার নথি",
-    doc_land: "জমির দলিল / খতিয়ান",
-    doc_bank: "ব্যাংক পাসবুক",
-    view_file: "ফাইল দেখুন ↗",
-    not_uploaded: "প্রদান করা হয়নি",
-    start_new_cycle_title: "পরবর্তী ফসল চক্র শুরু করুন (নতুন ঋতু)",
-    start_new_cycle_desc: "আপনার পূর্ববর্তী ফসল সম্পন্ন হয়েছে! জমির অনুমোদন সংরক্ষিত রয়েছে। আপনি এখনই নতুন ঋতুর চাষাবাদ শুরু করতে পারেন।",
-    btn_start_new_cycle: "নতুন মৌসুমের চাষ শুরু করুন ➔"
+    aadhar_no: "আধার",
+    has_land: "জমি আছে কিনা",
+    land_type: "প্রকার",
+    start_new_cycle_title: "🌱 পরবর্তী ফসল চক্র শুরু করুন (নতুন ঋতু)",
+    start_new_cycle_desc: "আপনার পূর্ববর্তী ফসল সম্পন্ন হয়েছে! জমির অনুমোদন সংরক্ষিত রয়েছে। নতুন ঋতুর চাষাবাদ শুরু করুন।",
+    btn_start_new_cycle: "নতুন মৌসুমের চাষ শুরু করুন ➔",
+    stage_lbl: "পর্যায়"
   },
   pa: {
     dashboard_title: "ਕਿਸਾਨ ਪੋਰਟਲ",
@@ -1203,92 +1032,105 @@ const translations = {
     app_status: "ਅਰਜ਼ੀ ਦੀ ਸਥਿਤੀ",
     tab_status: "ਅਰਜ਼ੀ ਦੀ ਸਥਿਤੀ",
     tab_slots: "ਸਲਾਟ ਬੁਕਿੰਗ",
+    nav_lifecycle: "ਪੜਾਅ",
+    nav_data_docs: "ਡਾਟਾ ਅਤੇ ਦਸਤਾਵੇਜ਼",
     step_0: "ਕਿਸਾਨ ਸੇਵਾ ਕੇਂਦਰ",
-    step_1: "ਖਰੀਦ ਕੇਂਦਰ",
-    step_2: "ਜਾਂਚ ਅਧਿਕਾਰੀ ਨਿਯੁਕਤ",
-    step_3: "ਤਸਦੀਕ ਕੀਤਾ",
-    step_4: "ਸੋਸ਼ਲ ਪੁਆਇੰਟ ਅਲਾਟ",
+    step_1: "ਜਾਂਚ ਅਧਿਕਾਰੀ ਨਿਯੁਕਤ",
+    step_2: "ਤਸਦੀਕ ਕੀਤਾ",
+    step_3: "ਖਰੀਦ ਕੇਂਦਰ ਨੂੰ ਤਬਦੀਲ",
+    step_4: "ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਪ੍ਰਾਪਤ",
     step_5: "ਬੀਜ ਵੰਡ ਸੰਪੰਨ",
     step_6: "ਮੁਕੰਮਲ",
     declined_msg: "ਤੁਹਾਡੀ ਅਰਜ਼ੀ ਕਿਸਾਨ ਸੇਵਾ ਪੱਧਰ 'ਤੇ ਰੱਦ ਕਰ ਦਿੱਤੀ ਗਈ ਸੀ। ਵੇਰਵਿਆਂ ਲਈ ਆਪਣੇ ਸਥਾਨਕ ਦਫ਼ਤਰ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।",
     booking_slots: "ਸਲਾਟ ਬੁਕਿੰਗ",
-    land_verification: "ਜ਼ਮੀਨ ਤਸਦੀਕ ਮੁਲਾਕਾਤ",
-    seed_booking: "ਬੀਜ ਸੰਗ੍ਰਹਿ (ਸੋਸ਼ਲ ਪੁਆਇੰਟ)",
+    land_verification: "ਜ਼ਮੀਨ ਦੀ ਤਸਦੀਕ",
+    seed_booking: "ਬੀਜ ਬੁਕਿੰਗ",
+    harvesting_slot_title: "ਵਾਢੀ ਸਲਾਟ",
     booked: "ਬੁੱਕ ਕੀਤਾ ਗਿਆ",
     at_time: "ਸਮੇਂ",
-    book_slot: "ਸਲਾਟ ਚੋਣ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
-    slot_confirmed: "ਮੁਲਾਕਾਤ ਦੀ ਪੁਸ਼ਟੀ ਹੋ ਗਈ (ਲਾਕ)",
-    lock_note_verify: "🔒 ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਤਬਦੀਲ ਕਰਨ ਤੋਂ ਬਾਅਦ ਅਨਲੌਕ ਹੋਵੇਗਾ।",
-    lock_note_seed: "🔒 ਜ਼ਮੀਨ ਦੀ ਤਸਦੀਕ ਪਾਸ ਹੋਣ ਤੋਂ ਬਾਅਦ ਅਨਲੌਕ ਹੋਵੇਗਾ।",
-    lock_note_plowing_first: "🔒 ਬੀਜ ਰਿਜ਼ਰਵੇਸ਼ਨ ਅਨਲੌਕ ਕਰਨ ਲਈ 'ਕਿਸਾਨ ਚੱਕਰ' ਅਧੀਨ ਹਲ ਵਾਹੁਣ ਦੇ ਵੇਰਵੇ ਸੁਰੱਖਿਅਤ ਕਰੋ।",
+    book_slot: "ਸਲਾਟ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+    slot_confirmed: "ਸਲਾਟ ਦੀ ਪੁਸ਼ਟੀ ਹੋ ਗਈ (ਲਾਕ)",
+    lock_note_receive_first: "🔒 ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ 'ਪ੍ਰਾਪਤ' ਕਰਨ ਤੋਂ ਬਾਅਦ ਅਨਲੌਕ ਹੋਵੇਗਾ।",
+    lock_note_plowing_first: "🔒 ਬੀਜ ਬੁਕਿੰਗ ਅਨਲੌਕ ਕਰਨ ਲਈ ਹੇਠਾਂ ਹਲ ਵਾਹੁਣ ਦੇ ਵੇਰਵੇ ਸੁਰੱਖਿਅਤ ਕਰੋ।",
+    lock_note_seed_pipeline: "🔒 ਜ਼ਮੀਨ ਤਸਦੀਕ ਹੋਣ ਅਤੇ ਖਰੀਦ ਕੇਂਦਰ ਤਬਦੀਲ ਹੋਣ ਤੋਂ ਬਾਅਦ ਅਨਲੌਕ ਹੋਵੇਗਾ।",
+    lock_note_harvest_first: "🔒 ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਬੀਜ ਵੰਡ ਦਰਜ ਕਰਨ ਤੋਂ ਬਾਅਦ ਅਨਲੌਕ ਹੋਵੇਗਾ।",
     tab_cycle: "ਕਿਸਾਨ ਚੱਕਰ",
     tab_info: "ਜਾਣਕਾਰੀ",
     tab_app: "ਅਰਜ਼ੀ ਵੇਖੋ",
-    sec_officer: "ਜਾਂਚ ਅਧਿਕਾਰੀ ਨਿਯੁਕਤੀ",
+    sec_officer: "ਜਾਂਚ ਅਧਿਕਾਰੀ",
     officer_name: "ਅਧਿਕਾਰੀ ਦਾ ਨਾਮ",
-    officer_contact: "ਫ਼ੋਨ ਨੰਬਰ",
-    officer_pending: "ਅਜੇ ਤੱਕ ਨਿਯੁਕਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ। ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਪੁਸ਼ਟੀ ਹੋਣ 'ਤੇ ਦਿਖਾਈ ਦੇਵੇਗਾ।",
-    sec_verification: "ਜ਼ਮੀਨ ਅਤੇ ਦਸਤਾਵੇਜ਼ ਤਸਦੀਕ ਰਿਪੋਰਟ",
-    farmer_name: "ਪੂਰਾ ਨਾਮ",
+    officer_contact: "ਸੰਪਰਕ",
+    officer_designation: "ਅਹੁਦਾ",
+    officer_designation_val: "ਫੀਲਡ ਇੰਸਪੈਕਟਰ",
+    badge_assigned_confirmed: "ਨਿਯੁਕਤ ਅਤੇ ਪੁਸ਼ਟੀ ਕੀਤੀ",
+    officer_pending: "ਨਿਯੁਕਤੀ ਬਾਕੀ",
+    officer_pending_admin_note: "ਅਜੇ ਤੱਕ ਨਿਯੁਕਤ ਨਹੀਂ ਕੀਤਾ ਗਿਆ। ਸਲਾਟ ਬੁੱਕ ਕਰਨ ਤੋਂ ਬਾਅਦ ਕਿਸਾਨ ਸੇਵਾ ਕੇਂਦਰ ਨਿਯੁਕਤ ਕਰੇਗਾ।",
+    sec_verification: "ਜ਼ਮੀਨ ਤਸਦੀਕ ਨਤੀਜਾ",
+    farmer_name: "ਨਾਮ",
     mobile_no: "ਮੋਬਾਈਲ ਨੰਬਰ",
-    land_decimal: "ਜ਼ਮੀਨ ਦਾ ਖੇਤਰਫਲ",
-    kishan_id: "ਕਿਸਾਨ ਕਾਰਡ ਆਈਡੀ",
-    pref_crop: "ਸਿਫ਼ਾਰਸ਼ੀ ਢੁਕਵੀਂ ਫ਼ਸਲ",
+    gender_lbl: "ਲਿੰਗ",
+    category_lbl: "ਸ਼੍ਰੇਣੀ",
+    land_decimal: "ਜ਼ਮੀਨ (ਦਸ਼ਮਲਵ)",
+    decimals_unit: "ਦਸ਼ਮਲਵ",
+    verified_date: "ਤਸਦੀਕ ਮਿਤੀ",
+    kishan_id: "ਕਿਸਾਨ ਆਈਡੀ",
     result: "ਨਤੀਜਾ",
     verified_tag: "ਤਸਦੀਕ ਕੀਤਾ ਗਿਆ ✅",
     not_verified_tag: "ਤਸਦੀਕ ਨਹੀਂ ਹੋਇਆ",
-    no_verification: "ਅਜੇ ਤੱਕ ਕੋਈ ਅਧਿਕਾਰਤ ਨਿਰੀਖਣ ਦਰਜ ਨਹੀਂ ਹੈ।",
-    sec_plowing: "🚜 ਹਲ ਵਾਹੁਣਾ ਅਤੇ ਬੀਜ ਵੰਡ",
-    crop_name: "ਮੁੱਖ ਫ਼ਸਲ ਦੀ ਚੋਣ",
+    no_verification: "ਅਜੇ ਤੱਕ ਕੋਈ ਨਤੀਜਾ ਨਹੀਂ।",
+    sec_plowing: "🚜 ਹਲ ਵਾਹੁਣਾ",
+    status_distributed_settled: "ਵੰਡਿਆ ਅਤੇ ਮੁਕੰਮਲ",
+    badge_entry_required: "ਵੇਰਵੇ ਲੋੜੀਂਦੇ",
+    crop_name: "ਫ਼ਸਲ ਦਾ ਨਾਮ",
     multi_crop_label: "ਕੀ ਤੁਸੀਂ ਇੱਕ ਤੋਂ ਵੱਧ ਫ਼ਸਲਾਂ ਉਗਾ ਰਹੇ ਹੋ?",
     multi_crop_status: "ਇੱਕ ਤੋਂ ਵੱਧ ਫ਼ਸਲਾਂ",
-    second_crop: "ਦੂਜੀ ਫ਼ਸਲ ਦਾ ਨਾਮ",
-    approx_qty: "ਅੰਦਾਜ਼ਨ ਉਤਪਾਦਨ",
+    second_crop: "ਦੂਜੀ ਫ਼ਸਲ (ਜੇਕਰ ਇੱਕ ਤੋਂ ਵੱਧ ਹੋਣ)",
+    approx_qty: "ਉਤਪਾਦ ਦੀ ਅੰਦਾਜ਼ਨ ਮਾਤਰਾ",
     qty_placeholder: "ਜਿਵੇਂ 500 ਕਿਲੋ",
-    btn_save: "ਹਲ ਵਾਹੁਣ ਦੇ ਵੇਰਵੇ ਸੁਰੱਖਿਅਤ ਕਰੋ",
-    plowing_locked_badge: "ਵੇਰਵੇ ਸੁਰੱਖਿਅਤ (ਲਾਕ)",
-    slot_not_booked: "ਅਜੇ ਬੁੱਕ ਨਹੀਂ ਹੋਇਆ",
+    btn_save: "ਸੁਰੱਖਿਅਤ ਕਰੋ (Save)",
+    plowing_locked_badge: "ਹਲ ਵਾਹੁਣ ਦੇ ਵੇਰਵੇ ਸੁਰੱਖਿਅਤ (ਲਾਕ)",
+    subsidized_seed_receipt: "🌱 ਬੀਜ ਵੰਡ ਰਸੀਦ",
+    status_complete: "ਮੁਕੰਮਲ",
+    status_pending_pickup: "ਲੈਣਾ ਬਾਕੀ",
+    allotted_seed_lbl: "ਅਲਾਟ ਕੀਤਾ ਬੀਜ:",
+    amount_paid_lbl: "ਅਦਾ ਕੀਤੀ ਰਕਮ:",
+    payment_mode_lbl: "ਭੁਗਤਾਨ ਦਾ ਢੰਗ:",
+    seed_pickup_unlocked_note: "ਹਲ ਵਾਹੁਣ ਦੇ ਵੇਰਵੇ ਸੁਰੱਖਿਅਤ। ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਪ੍ਰਾਪਤ ਕਰਨ 'ਤੇ ਬੀਜ ਸਲਾਟ ਬੁੱਕ ਕਰੋ।",
     yes: "ਹਾਂ",
     no: "ਨਹੀਂ",
-    sec_harvesting: "🌾 ਫ਼ਸਲ ਵਾਢੀ ਅਤੇ ਖਰੀਦ ਭੁਗਤਾਨ",
-    seed_slot_warning: "ਵਾਢੀ ਵੱਲ ਵਧਣ ਲਈ ਉੱਪਰ ਬੀਜ ਸਲਾਟ ਬੁੱਕ ਕਰੋ।",
-    harvest_qty: "ਕੁੱਲ ਖਰੀਦੀ ਗਈ ਮਾਤਰਾ",
-    harvest_quality: "ਪ੍ਰਮਾਣਿਤ ਗੁਣਵੱਤਾ ਗ੍ਰੇਡ",
-    harvest_amount: "ਕੁੱਲ ਭੁਗਤਾਨ ਰਕਮ",
+    sec_harvesting: "🌾 ਵਾਢੀ",
+    primary_crop_lbl: "ਮੁੱਖ ਫ਼ਸਲ",
+    secondary_crop_lbl: "ਦੂਜੀ ਫ਼ਸਲ",
+    harvest_qty: "ਮਾਤਰਾ",
+    harvest_quality: "ਗੁਣਵੱਤਾ",
+    harvest_amount: "ਕੁੱਲ ਮਿਲੀ ਰਕਮ",
     status: "ਸਥਿਤੀ",
-    status_transferred: "ਟਰਾਂਸਫਰ ਕੀਤਾ ਗਿਆ",
-    status_pending: "ਬਕਾਇਆ",
-    harvest_pending: "ਡਿਲੀਵਰੀ ਤੋਂ ਬਾਅਦ ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਵਾਢੀ ਦੇ ਵੇਰਵੇ ਦਰਜ ਕੀਤੇ ਜਾਣਗੇ।",
-    sec_analytics: "📊 ਖੇਤੀਬਾੜੀ ਉਤਪਾਦਨ ਅਤੇ ਸੀਜ਼ਨ ਵਿਸ਼ਲੇਸ਼ਣ",
+    status_transferred: "ਰਕਮ ਟਰਾਂਸਫਰ ਹੋ ਗਈ ✅",
+    status_pending: "ਵਾਢੀ ਬਾਕੀ",
+    harvest_pending: "ਸਲਾਟ ਪੂਰਾ ਹੋਣ 'ਤੇ ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਵਾਢੀ ਦੇ ਵੇਰਵੇ ਭਰੇ ਜਾਣਗੇ।",
+    sec_analytics: "📊 ਫ਼ਸਲ ਵਿਸ਼ਲੇਸ਼ਣ",
+    saved_seasons_badge: "ਸੁਰੱਖਿਅਤ ਸੀਜ਼ਨ",
     chart_bar: "ਸੀਜ਼ਨ ਅਨੁਸਾਰ ਮਾਤਰਾ (ਬਾਰ)",
     chart_line: "ਰੁਝਾਨ (ਲਾਈਨ)",
     chart_pie: "ਫ਼ਸਲ ਦਾ ਹਿੱਸਾ (ਪਾਈ)",
-    analytics_empty: "ਖਰੀਦ ਕੇਂਦਰ ਵੱਲੋਂ ਅੰਕੜੇ ਇਕੱਠੇ ਕਰਨ ਤੋਂ ਬਾਅਦ ਵਿਸ਼ਲੇਸ਼ਣ ਦਿਖਾਈ ਦੇਵੇਗਾ।",
-    sec_app_details: "📄 ਪ੍ਰਮਾਣਿਤ ਅਰਜ਼ੀ ਫ਼ਾਈਲ",
+    seasonal_crops_ledger_title: "📋 ਸੀਜ਼ਨ ਵਾਰ ਫ਼ਸਲ ਖਾਤਾ",
+    th_season: "ਸੀਜ਼ਨ",
+    th_crop_variety: "ਫ਼ਸਲ ਦੀ ਕਿਸਮ",
+    th_yield_qty: "ਝਾੜ ਮਾਤਰਾ (ਕੁਇੰਟਲ)",
+    th_disbursed_val: "ਟਰਾਂਸਫਰ ਕੀਤੀ ਰਕਮ (₹)",
+    current_season_txt: "ਮੌਜੂਦਾ ਸੀਜ਼ਨ",
+    under_cultivation_txt: "ਖੇਤੀ ਚੱਲ ਰਹੀ ਹੈ",
+    pending_final_harvest_txt: "ਅੰਤਿਮ ਵਾਢੀ ਬਾਕੀ",
+    sec_app_details: "📄 ਤੁਹਾਡੀ ਅਰਜ਼ੀ",
     cat_personal: "ਨਿੱਜੀ ਵੇਰਵੇ",
-    cat_land: "ਖੇਤੀਬਾੜੀ ਜ਼ਮੀਨ ਦੇ ਵੇਰਵੇ",
-    cat_address: "ਪਿੰਡ ਅਤੇ ਪੰਚਾਇਤ ਦਾ ਪਤਾ",
-    cat_bank: "ਬੈਂਕਿੰਗ ਅਤੇ ਸਿੱਧਾ ਲਾਭ ਤਬਾਦਲਾ (DBT)",
-    aadhar_no: "ਆਧਾਰ ਰਿਕਾਰਡ",
-    has_land: "ਜ਼ਮੀਨ ਦੀ ਮਲਕੀਅਤ",
-    land_type: "ਖੇਤੀ ਮਾਡਲ",
-    state: "ਰਾਜ",
-    district: "ਜ਼ਿਲ੍ਹਾ",
-    village: "ਪਿੰਡ",
-    panchayat: "ਗ੍ਰਾਮ ਪੰਚਾਇਤ",
-    bank_account: "ਖਾਤਾ ਨੰਬਰ",
-    bank_ifsc: "IFSC ਕੋਡ",
-    bank_name: "ਬੈਂਕ ਦਾ ਨਾਮ",
-    uploaded_docs: "ਅਧਿਕਾਰਤ ਦਸਤਾਵੇਜ਼ ਵਾਲਟ",
-    doc_kishan: "ਕਿਸਾਨ ਕਾਰਡ",
-    doc_aadhar: "ਆਧਾਰ ਦਸਤਾਵੇਜ਼",
-    doc_land: "ਜ਼ਮੀਨ ਦੇ ਦਸਤਾਵੇਜ਼ / ਖਤੌਣੀ",
-    doc_bank: "ਬੈਂਕ ਪਾਸਬੁੱਕ",
-    view_file: "ਫ਼ਾਈਲ ਵੇਖੋ ↗",
-    not_uploaded: "ਪ੍ਰਦਾਨ ਨਹੀਂ ਕੀਤਾ ਗਿਆ",
-    start_new_cycle_title: "ਅਗਲਾ ਫ਼ਸਲੀ ਚੱਕਰ ਸ਼ੁਰੂ ਕਰੋ (ਨਵਾਂ ਸੀਜ਼ਨ)",
-    start_new_cycle_desc: "ਤੁਹਾਡੀ ਪਿਛਲੀ ਫ਼ਸਲ ਪੂਰੀ ਹੋ ਚੁੱਕੀ ਹੈ! ਜ਼ਮੀਨ ਦੀ ਤਸਦੀਕ ਬਰਕਰਾਰ ਰਹੇਗੀ। ਤੁਸੀਂ ਹੁਣੇ ਅਗਲੀ ਮੌਸਮੀ ਖੇਤੀ ਸ਼ੁਰੂ ਕਰ ਸਕਦੇ ਹੋ।",
-    btn_start_new_cycle: "ਨਵਾਂ ਸੀਜ਼ਨ ਸ਼ੁਰੂ ਕਰੋ ➔"
+    cat_land: "ਜ਼ਮੀਨ ਦੇ ਵੇਰਵੇ",
+    aadhar_no: "ਆਧਾਰ",
+    has_land: "ਕੀ ਜ਼ਮੀਨ ਹੈ",
+    land_type: "ਕਿਸਮ",
+    start_new_cycle_title: "🌱 ਅਗਲਾ ਫ਼ਸਲੀ ਚੱਕਰ ਸ਼ੁਰੂ ਕਰੋ (ਨਵਾਂ ਸੀਜ਼ਨ)",
+    start_new_cycle_desc: "ਪਿਛਲੀ ਫ਼ਸਲ ਪੂਰੀ ਹੋ ਗਈ ਹੈ! ਜ਼ਮੀਨ ਦੀ ਤਸਦੀਕ ਬਰਕਰਾਰ ਹੈ। ਨਵੀਂ ਖੇਤੀ ਸ਼ੁਰੂ ਕਰੋ।",
+    btn_start_new_cycle: "ਨਵਾਂ ਸੀਜ਼ਨ ਸ਼ੁਰੂ ਕਰੋ ➔",
+    stage_lbl: "ਪੜਾਅ"
   },
   or: {
     dashboard_title: "କୃଷକ ପୋର୍ଟାଲ",
@@ -1299,92 +1141,105 @@ const translations = {
     app_status: "ଆବେଦନର ସ୍ଥିତି",
     tab_status: "ଆବେଦନର ସ୍ଥିତି",
     tab_slots: "ସ୍ଲଟ୍ ବୁକିଂ",
+    nav_lifecycle: "ପ୍ରକ୍ରିୟା ପର୍ଯ୍ୟାୟ",
+    nav_data_docs: "ତଥ୍ୟ ଏବଂ ଦସ୍ତାବିଜ୍",
     step_0: "କିଷାନ ସେବା କେନ୍ଦ୍ର",
-    step_1: "କ୍ରୟ କେନ୍ଦ୍ର",
-    step_2: "ଯାଞ୍ଚ ଅଧିକାରୀ ନିଯୁକ୍ତ",
-    step_3: "ଯାଞ୍ଚ ହୋଇଛି",
-    step_4: "ସୋସିଆଲ୍ ପଏଣ୍ଟ ଆବଣ୍ଟିତ",
+    step_1: "ଯାଞ୍ଚ ଅଧିକାରୀ ନିଯୁକ୍ତ",
+    step_2: "ଯାଞ୍ଚ ହୋଇଛି",
+    step_3: "କ୍ରୟ କେନ୍ଦ୍ରକୁ ସ୍ଥାନାନ୍ତରିତ",
+    step_4: "କ୍ରୟ କେନ୍ଦ୍ର ଦ୍ୱାରା ଗ୍ରହଣ କରାଗଲା",
     step_5: "ବିହନ ବଣ୍ଟନ ସମାପ୍ତ",
     step_6: "ସମ୍ପୂର୍ଣ୍ଣ",
-    declined_msg: "କିଷାନ ସେବା ପର୍ଯ୍ୟାୟରେ ଆପଙ୍କ ଆବେଦନ ପ୍ରତ୍ୟାଖ୍ୟାନ କରାଯାଇଥିଲା। ବିବରଣୀ ପାଇଁ ସ୍ଥାନୀୟ କାର୍ଯ୍ୟାଳୟ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ।",
+    declined_msg: "କିଷାନ ସେବା ପର୍ଯ୍ୟାୟରେ ଆପଣଙ୍କ ଆବେଦନ ପ୍ରତ୍ୟାଖ୍ୟାନ କରାଯାଇଥିଲା। ବିବରଣୀ ପାଇଁ ସ୍ଥାନୀୟ କାର୍ଯ୍ୟାଳୟ ସହିତ ଯୋଗାଯୋଗ କରନ୍ତୁ।",
     booking_slots: "ସ୍ଲଟ୍ ବୁକିଂ",
-    land_verification: "ଜମି ଯାଞ୍ଚ ନିର୍ଦ୍ଧାରିତ ସମୟ",
-    seed_booking: "ବିହନ ସଂଗ୍ରହ (ସୋସିଆଲ୍ ପଏଣ୍ଟ)",
+    land_verification: "ଜମି ଯାଞ୍ଚ",
+    seed_booking: "ବିହନ ବୁକିଂ",
+    harvesting_slot_title: "ଅମଳ ସ୍ଲଟ୍",
     booked: "ବୁକ୍ ହୋଇଛି",
     at_time: "ସମୟ",
-    book_slot: "ସ୍ଲଟ୍ ଚୟନ ନିଶ୍ଚିତ କରନ୍ତୁ",
-    slot_confirmed: "ସମୟ ନିଶ୍ଚିତ ହୋଇଛି (ଲକ୍)",
-    lock_note_verify: "🔒 କ୍ରୟ କେନ୍ଦ୍ରକୁ ଆବେଦନ ସ୍ଥାନାନ୍ତରିତ ହେବା ପରେ ଏହା ଖୋଲିବ।",
-    lock_note_seed: "🔒 ଜମି ଯାଞ୍ଚ ସଫଳ ହେବା ପରେ ବିହନ ସ୍ଲଟ୍ ଖୋଲିବ।",
-    lock_note_plowing_first: "🔒 ବିହନ ସଂରକ୍ଷଣ ଖୋଲିବା ପାଇଁ 'କୃଷକ ଚକ୍ର' ରେ ହଳ ବିବରଣୀ ସଂରକ୍ଷଣ କରନ୍ତୁ।",
+    book_slot: "ସ୍ଲଟ୍ ନିଶ୍ଚିତ କରନ୍ତୁ",
+    slot_confirmed: "ସ୍ଲଟ୍ ନିଶ୍ଚିତ (ଲକ୍)",
+    lock_note_receive_first: "🔒 କ୍ରୟ କେନ୍ଦ୍ର 'ଗ୍ରହଣ' କରିବା ପରେ ଏହା ଖୋଲିବ।",
+    lock_note_plowing_first: "🔒 ବିହନ ବୁକିଂ ଖୋଲିବାକୁ ତଳେ ହଳ ବିବରଣୀ ସଂରକ୍ଷଣ କରନ୍ତୁ।",
+    lock_note_seed_pipeline: "🔒 ଜମି ଯାଞ୍ଚ ସମାପ୍ତ ହେବା ଏବଂ କ୍ରୟ କେନ୍ଦ୍ରକୁ ସ୍ଥାନାନ୍ତର ପରେ ଏହା ଖୋଲିବ।",
+    lock_note_harvest_first: "🔒 କ୍ରୟ କେନ୍ଦ୍ର ବିହନ ବଣ୍ଟନ ପଞ୍ଜୀକରଣ କଲା ପରେ ଏହା ଖୋଲିବ।",
     tab_cycle: "କୃଷକ ଚକ୍ର",
     tab_info: "ସୂଚନା",
     tab_app: "ଆବେଦନ ଦେଖନ୍ତୁ",
-    sec_officer: "ଯାଞ୍ଚ ଅଧିକାରୀ ନିଯୁକ୍ତି",
+    sec_officer: "ଯାଞ୍ଚ ଅଧିକାରୀ",
     officer_name: "ଅଧିକାରୀଙ୍କ ନାମ",
-    officer_contact: "ଫୋନ୍ ନମ୍ବର",
-    officer_pending: "ଏପର୍ଯ୍ୟନ୍ତ ନିଯୁକ୍ତ ହୋଇନାହାଁନ୍ତି। କ୍ରୟ କେନ୍ଦ୍ର ନିଶ୍ଚିତ କଲା ପରେ ଦେଖାଯିବ।",
-    sec_verification: "ଜମି ଏବଂ ଦସ୍ତାବିଜ୍ ଯାଞ୍ଚ ରିପୋର୍ଟ",
-    farmer_name: "ସମ୍ପୂର୍ଣ୍ଣ ନାମ",
+    officer_contact: "ଯୋଗାଯୋଗ",
+    officer_designation: "ପଦବୀ",
+    officer_designation_val: "କ୍ଷେତ୍ର ନିରୀକ୍ଷକ",
+    badge_assigned_confirmed: "ନିଯୁକ୍ତ ଏବଂ ନିଶ୍ଚିତ",
+    officer_pending: "ନିଯୁକ୍ତି ବାକି",
+    officer_pending_admin_note: "ଏପର୍ଯ୍ୟନ୍ତ ନିଯୁକ୍ତ ହୋଇନାହାଁନ୍ତି। ଜମି ଯାଞ୍ଚ ସ୍ଲଟ୍ ବୁକ୍ କଲା ପରେ କିଷାନ ସେବା କେନ୍ଦ୍ର ଦ୍ୱାରା ନିଯୁକ୍ତ କରାଯିବ।",
+    sec_verification: "ଜମି ଯାଞ୍ଚ ଫଳାଫଳ",
+    farmer_name: "ନାମ",
     mobile_no: "ମୋବାଇଲ୍ ନମ୍ବର",
-    land_decimal: "ଜମିର କ୍ଷେତ୍ରଫଳ",
-    kishan_id: "କିଷାନ କାର୍ଡ ଆଇଡି",
-    pref_crop: "ସୁପାରିଶ କରାଯାଇଥିବା ଉପଯୁକ୍ତ ଫସଲ",
+    gender_lbl: "ଲିଙ୍ଗ",
+    category_lbl: "ବର୍ଗ",
+    land_decimal: "ଜମି (ଡେସିମିଲ୍)",
+    decimals_unit: "ଡେସିମିଲ୍",
+    verified_date: "ଯାଞ୍ଚ ତାରିଖ",
+    kishan_id: "କିଷାନ ଆଇଡି",
     result: "ଫଳାଫଳ",
     verified_tag: "ଯାଞ୍ଚ ସଫଳ ✅",
     not_verified_tag: "ଯାଞ୍ଚ ହୋଇନାହିଁ",
-    no_verification: "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ସରକାରୀ ଯାଞ୍ଚ ରିପୋର୍ଟ ନାହିଁ।",
-    sec_plowing: "🚜 ହଳ କରିବା ଏବଂ ବିହନ ବଣ୍ଟନ",
-    crop_name: "ମୁଖ୍ୟ ଫସଲ ଚୟନ",
-    multi_crop_label: "ଆପଣ ଏକାଧିକ ଫସଲ ଚାଷ କରୁଛନ୍ତି କି?",
+    no_verification: "କୌଣସି ଯାଞ୍ଚ ଫଳାଫଳ ମିଳିନାହିଁ।",
+    sec_plowing: "🚜 ହଳ କରିବା",
+    status_distributed_settled: "ବଣ୍ଟିତ ଏବଂ ନିଷ୍ପତ୍ତି ସରିଛି",
+    badge_entry_required: "ତଥ୍ୟ ଆବଶ୍ୟକ",
+    crop_name: "ଫସଲର ନାମ",
+    multi_crop_label: "ଏକାଧିକ ଫସଲ ଚାଷ କରୁଛନ୍ତି କି?",
     multi_crop_status: "ଏକାଧିକ ଫସଲ",
-    second_crop: "ଦ୍ୱିତୀୟ ଫସଲର ନାମ",
-    approx_qty: "ଆନୁମାନିକ ଉତ୍ପାଦନ",
+    second_crop: "ଦ୍ୱିତୀୟ ଫସଲ (ଯଦି ଥାଏ)",
+    approx_qty: "ଆନୁମାନିକ ପରିମାଣ",
     qty_placeholder: "ଯଥା: 500 କିଗ୍ରା",
-    btn_save: "ହଳ ବିବରଣୀ ସଂରକ୍ଷଣ କରନ୍ତୁ",
-    plowing_locked_badge: "ବିବରଣୀ ସଂରକ୍ଷିତ (ଲକ୍)",
-    slot_not_booked: "ଏପର୍ଯ୍ୟନ୍ତ ବୁକ୍ ହୋଇନାହିଁ",
+    btn_save: "ସଂରକ୍ଷଣ କରନ୍ତୁ (Save)",
+    plowing_locked_badge: "ହଳ ବିବରଣୀ ସଂରକ୍ଷିତ (ଲକ୍)",
+    subsidized_seed_receipt: "🌱 ବିହନ ବଣ୍ଟନ ରସିଦ",
+    status_complete: "ସମ୍ପୂର୍ଣ୍ଣ",
+    status_pending_pickup: "ସଂଗ୍ରହ ବାକି",
+    allotted_seed_lbl: "ଆବଣ୍ଟିତ ବିହନ:",
+    amount_paid_lbl: "ଦିଆଯାଇଥିବା ଟଙ୍କା:",
+    payment_mode_lbl: "ଟଙ୍କା ପୈଠ ମାଧ୍ୟମ:",
+    seed_pickup_unlocked_note: "ହଳ ବିବରଣୀ ସଂରକ୍ଷିତ ହେଲା। କ୍ରୟ କେନ୍ଦ୍ର ଗ୍ରହଣ କଲା ପରେ ବିହନ ସ୍ଲଟ୍ ବୁକ୍ କରନ୍ତୁ।",
     yes: "ହଁ",
     no: "ନାହିଁ",
-    sec_harvesting: "🌾 ଫସଲ ଅମଳ ଏବଂ ସରକାରୀ କ୍ରୟ ପୈଠ",
-    seed_slot_warning: "ଅମଳ ପ୍ରକ୍ରିୟା ପାଇଁ ଉପରେ ବିହନ ସ୍ଲଟ୍ ବୁକ୍ କରନ୍ତୁ।",
-    harvest_qty: "ମୋଟ କ୍ରୟ ପରିମାଣ",
-    harvest_quality: "ପ୍ରମାଣିତ ଗୁଣବତ୍ତା ଗ୍ରେଡ୍",
-    harvest_amount: "ମୋଟ ପୈଠ ରାଶି",
+    sec_harvesting: "🌾 ଅମଳ",
+    primary_crop_lbl: "ମୁଖ୍ୟ ଫସଲ",
+    secondary_crop_lbl: "ଦ୍ୱିତୀୟ ଫସଲ",
+    harvest_qty: "ପରିମାଣ",
+    harvest_quality: "ଗୁଣବତ୍ତା",
+    harvest_amount: "ମୋଟ ପ୍ରାପ୍ତ ରାଶି",
     status: "ସ୍ଥିତି",
-    status_transferred: "ସ୍ଥାନାନ୍ତରିତ",
-    status_pending: "ବକେୟା",
-    harvest_pending: "ଫସଲ ଦାଖଲ ପରେ କ୍ରୟ କେନ୍ଦ୍ର ଦ୍ୱାରା ଅମଳ ବିବରଣୀ ଭରାଯିବ।",
-    sec_analytics: "📊 କୃଷି ଉତ୍ପାଦନ ଏବଂ ଋତୁଭିତ୍ତିକ ବିଶ୍ଳେଷଣ",
+    status_transferred: "ରାଶି ସ୍ଥାନାନ୍ତରିତ ✅",
+    status_pending: "ଅମଳ ବାକି",
+    harvest_pending: "ସ୍ଲଟ୍ ସମାପ୍ତ ହେବା ପରେ କ୍ରୟ କେନ୍ଦ୍ର ଦ୍ୱାରା ଅମଳ ବିବରଣୀ ଭରାଯିବ।",
+    sec_analytics: "📊 ଫସଲ ବିଶ୍ଳେଷଣ",
+    saved_seasons_badge: "ସଂରକ୍ଷିତ ଋତୁ",
     chart_bar: "ଋତୁ ଅନୁଯାୟୀ ପରିମାଣ (ବାର୍)",
     chart_line: "ଧାରା (ଲାଇନ୍)",
     chart_pie: "ଫସଲ ଅନୁପାତ (ପାଇ)",
-    analytics_empty: "କ୍ରୟ କେନ୍ଦ୍ର ତଥ୍ୟ ସଂଗ୍ରହ କଲା ପରେ ବିଶ୍ଳେଷଣ ଉପଲବ୍ଧ ହେବ।",
-    sec_app_details: "📄 ପ୍ରମାଣିତ ଆବେଦନ ପତ୍ର",
+    seasonal_crops_ledger_title: "📋 ଋତୁଭିତ୍ତିକ ଫସଲ ଖାତା",
+    th_season: "ଋତୁ",
+    th_crop_variety: "ଫସଲ କିସମ",
+    th_yield_qty: "ଉତ୍ପାଦନ (କ୍ୱିଣ୍ଟାଲ୍)",
+    th_disbursed_val: "ସ୍ଥାନାନ୍ତରିତ ରାଶି (₹)",
+    current_season_txt: "ଚଳିତ ଋତୁ",
+    under_cultivation_txt: "ଚାଷ କାର୍ଯ୍ୟ ଜାରି ରହିଛି",
+    pending_final_harvest_txt: "ଚୂଡ଼ାନ୍ତ ଅମଳ ବାକି",
+    sec_app_details: "📄 ଆପଣଙ୍କ ଆବେଦନ",
     cat_personal: "ବ୍ୟକ୍ତିଗତ ବିବରଣୀ",
-    cat_land: "କୃଷି ଜମି ବିବରଣୀ",
-    cat_address: "ଗ୍ରାମ ଏବଂ ପଞ୍ଚାୟତ ଠିକଣା",
-    cat_bank: "ବ୍ୟାଙ୍କିଙ୍ଗ୍ ଏବଂ ପ୍ରତ୍ୟକ୍ଷ ସହାୟତା (DBT)",
-    aadhar_no: "ଆଧାର ରେକର୍ଡ",
-    has_land: "ଜମି ମାଲିକାନା",
-    land_type: "ଚାଷ ପ୍ରଣାଳୀ",
-    state: "ରାଜ୍ୟ",
-    district: "ଜିଲ୍ଲା",
-    village: "ଗ୍ରାମ",
-    panchayat: "ଗ୍ରାମ ପଞ୍ଚାୟତ",
-    bank_account: "ଖାତା ସଂଖ୍ୟା",
-    bank_ifsc: "IFSC କୋଡ୍",
-    bank_name: "ବ୍ୟାଙ୍କର ନାମ",
-    uploaded_docs: "ସରକାରୀ ଦସ୍ତାବିଜ୍ ଭଲ୍ଟ",
-    doc_kishan: "କିଷାନ କାର୍ଡ",
-    doc_aadhar: "ଆଧାର ଦସ୍ତାବିଜ୍",
-    doc_land: "ଜମି ପଟ୍ଟା / ଖତିଆନ୍",
-    doc_bank: "ବ୍ୟାଙ୍କ ପାସବହି",
-    view_file: "ଫାଇଲ୍ ଦେଖନ୍ତୁ ↗",
-    not_uploaded: "ପ୍ରଦାନ କରାଯାଇ ନାହିଁ",
-    start_new_cycle_title: "ପରବର୍ତ୍ତୀ ଫସଲ ଚକ୍ର ଆରମ୍ଭ କରନ୍ତୁ (ନୂଆ ଋତୁ)",
-    start_new_cycle_desc: "ଆପଣଙ୍କର ପୂର୍ବ ଫସଲ ସମ୍ପୂର୍ଣ୍ଣ ହୋଇଛି! ଜମି ଯାଞ୍ଚ ପୂର୍ବରୁ ପ୍ରମାଣିତ ଅଛି ଏବଂ ରହିବ। ଆପଣ ବର୍ତ୍ତମାନ ପରବର୍ତ୍ତୀ ଋତୁ ଚାଷ ଆରମ୍ଭ କରିପାରିବେ।",
-    btn_start_new_cycle: "ନୂତନ ଋତୁ ଚାଷ ଆରମ୍ଭ କରନ୍ତୁ ➔"
+    cat_land: "ଜମି ବିବରଣୀ",
+    aadhar_no: "ଆଧାର",
+    has_land: "ଜମି ଅଛି କି",
+    land_type: "ପ୍ରକାର",
+    start_new_cycle_title: "🌱 ପରବର୍ତ୍ତୀ ଫସଲ ଚକ୍ର ଆରମ୍ଭ କରନ୍ତୁ (ନୂଆ ଋତୁ)",
+    start_new_cycle_desc: "ପୂର୍ବ ଅମଳ ସରିଛି! ଜମି ଯାଞ୍ଚ ବଳବତ୍ତର ରହିଛି। ନୂଆ ଚାଷ ଆରମ୍ଭ କରନ୍ତୁ।",
+    btn_start_new_cycle: "ନୂତନ ଋତୁ ଚାଷ ଆରମ୍ଭ କରନ୍ତୁ ➔",
+    stage_lbl: "ପର୍ଯ୍ୟାୟ"
   }
 };
 
@@ -1410,15 +1265,13 @@ document.addEventListener('DOMContentLoaded', () => {
   changeLanguage(savedLang);
 });
 
-// Resilient Chart Initialization with Genuine Analytics Data
 let chartInstances = {};
 
 function initCharts() {
   const rawAnalytics = JSON.parse('{{ analytics | default([], true) | tojson | safe }}');
 
-  // If farmer has not yet completed historical seasons, supply representative baseline
   const analyticsData = (rawAnalytics && rawAnalytics.length > 0) ? rawAnalytics : [
-    { season: "Kharif 2025", crop: "{{ farmer['preference_crop'] or 'Rice' }}", quantity: 38.5, amount: 84700 },
+    { season: "Kharif 2025", crop: "Rice", quantity: 38.5, amount: 84700 },
     { season: "Rabi 2025", crop: "Wheat", quantity: 29.0, amount: 63800 },
     { season: "Zaid 2026", crop: "Mustard", quantity: 18.2, amount: 45500 }
   ];
@@ -1514,7 +1367,6 @@ function showTab(name, btnElement) {
     btnElement.classList.add('active');
   }
 
-  // Delay chart render until tab dimensions reflow from display:none to visible
   if (name === 'info') {
     requestAnimationFrame(() => {
       setTimeout(initCharts, 60);

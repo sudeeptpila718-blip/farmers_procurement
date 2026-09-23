@@ -58,10 +58,10 @@ STATE_DISTRICTS = {
 
 STATUS_STEPS = [
     "Kishan Seva Kendra",
-    "Procurement Centre",
     "Verification Officer Assigned",
     "Verified",
-    "Social Point Assigned",
+    "Transferred to Procurement",
+    "Received by Procurement",
     "Seed Distribution Done",
     "Completed",
 ]
@@ -93,10 +93,14 @@ def init_db():
             app_no TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             mobile TEXT NOT NULL,
+            gender TEXT,
+            category TEXT,
             kishan_id TEXT,
             kishan_doc TEXT,
             aadhar TEXT,
             aadhar_doc TEXT,
+            photo_doc TEXT,
+            signature_doc TEXT,
             has_land TEXT,
             land_type TEXT,
             land_decimal REAL DEFAULT 0,
@@ -125,10 +129,11 @@ def init_db():
 
         CREATE TABLE IF NOT EXISTS verification_results (
             farmer_app_no TEXT PRIMARY KEY,
-            name_ok INTEGER, mobile_ok INTEGER, state_ok INTEGER,
-            district_ok INTEGER, village_ok INTEGER, land_ok INTEGER,
-            aadhar_doc_ok INTEGER, land_doc_ok INTEGER, kishan_doc_ok INTEGER,
-            preference_crop TEXT,
+            land_ok INTEGER,
+            aadhar_doc_ok INTEGER,
+            land_doc_ok INTEGER,
+            kishan_doc_ok INTEGER,
+            bank_doc_ok INTEGER,
             officer_name TEXT,
             verified INTEGER DEFAULT 0,
             verified_at TEXT
@@ -190,10 +195,35 @@ def init_db():
             quantity REAL,
             amount REAL DEFAULT 0
         );
+
+        CREATE TABLE IF NOT EXISTS farming_sessions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            farmer_app_no TEXT,
+            session_number INTEGER,
+            seed_name TEXT,
+            seed_quantity REAL,
+            seed_amount REAL,
+            payment_mode TEXT,
+            crop1_name TEXT,
+            crop1_quantity TEXT,
+            crop1_amount TEXT,
+            crop2_name TEXT,
+            crop2_quantity TEXT,
+            crop2_amount TEXT,
+            total_harvest_amount TEXT,
+            quality TEXT,
+            officer_name TEXT,
+            completed_at TEXT
+        );
         """
     )
-    # Safe migration for two-crop columns in harvesting
-    for col_def in [
+    for col_alter in [
+        "ALTER TABLE farmers ADD COLUMN photo_doc TEXT",
+        "ALTER TABLE farmers ADD COLUMN signature_doc TEXT",
+        "ALTER TABLE farmers ADD COLUMN gender TEXT",
+        "ALTER TABLE farmers ADD COLUMN category TEXT",
+        "ALTER TABLE farmers ADD COLUMN transferred_at TEXT",
+        "ALTER TABLE verification_results ADD COLUMN bank_doc_ok INTEGER DEFAULT 1",
         "ALTER TABLE harvesting ADD COLUMN crop1_name TEXT",
         "ALTER TABLE harvesting ADD COLUMN crop2_name TEXT",
         "ALTER TABLE harvesting ADD COLUMN crop2_quantity TEXT",
@@ -202,7 +232,7 @@ def init_db():
         "ALTER TABLE crop_analytics ADD COLUMN amount REAL DEFAULT 0"
     ]:
         try:
-            db.execute(col_def)
+            db.execute(col_alter)
             db.commit()
         except sqlite3.OperationalError:
             pass
@@ -357,39 +387,50 @@ def farmer_login():
 def register():
     if request.method == "GET":
         return render_template(
-            "register.html", states=STATE_DISTRICTS, banks=["State Bank of India", "Punjab National Bank",
-                                                              "Bank of Baroda", "Canara Bank", "Others"]
+            "register.html", 
+            states=STATE_DISTRICTS, 
+            banks=["State Bank of India", "Punjab National Bank", "Bank of Baroda", "Canara Bank", "Others"]
         )
 
     db = get_db()
     form = request.form
     app_no = gen_app_no(db)
 
-    kishan_doc = save_upload(request.files.get("kishan_doc"), "kishan")
+    photo_doc = save_upload(request.files.get("photo_doc"), "photo")
+    signature_doc = save_upload(request.files.get("signature_doc"), "signature")
     aadhar_doc = save_upload(request.files.get("aadhar_doc"), "aadhar")
     land_doc = save_upload(request.files.get("land_doc"), "land")
+    kishan_doc = save_upload(request.files.get("kishan_doc"), "kishan")
     bank_doc = save_upload(request.files.get("bank_doc"), "bank")
 
     bank_choice = form.get("bank_choice", "")
     bank_name = form.get("bank_other", "").strip() if bank_choice == "Others" else bank_choice
 
+    has_land = "Yes"
+    land_type = form.get("land_type", "Own")
+    land_decimal = float(form.get("land_decimal") or 0)
+
     db.execute(
         """INSERT INTO farmers
-        (app_no, name, mobile, kishan_id, kishan_doc, aadhar, aadhar_doc,
-         has_land, land_type, land_decimal, land_doc, state, district, village,
-         panchayat, bank_account, bank_doc, ifsc, bank_name, status, created_at)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (app_no, name, mobile, gender, category, kishan_id, kishan_doc, aadhar, aadhar_doc,
+         photo_doc, signature_doc, has_land, land_type, land_decimal, land_doc, state, district, 
+         village, panchayat, bank_account, bank_doc, ifsc, bank_name, status, created_at)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             app_no,
             form.get("name", "").strip(),
             form.get("mobile", "").strip(),
+            form.get("gender", "Male"),
+            form.get("category", "General"),
             form.get("kishan_id", "").strip(),
             kishan_doc,
             form.get("aadhar", "").strip(),
             aadhar_doc,
-            form.get("has_land", "No"),
-            form.get("land_type", ""),
-            float(form.get("land_decimal") or 0),
+            photo_doc,
+            signature_doc,
+            has_land,
+            land_type,
+            land_decimal,
             land_doc,
             form.get("state", ""),
             form.get("district", ""),
@@ -489,16 +530,15 @@ def start_new_cycle():
         flash("You can only start a new crop cycle after completing your current harvest.", "error")
         return redirect(url_for("dashboard"))
 
-    # Reset active farming data, keeping land verification intact
     db.execute("DELETE FROM plowing WHERE farmer_app_no=?", (app_no,))
     db.execute("DELETE FROM seed_giving WHERE farmer_app_no=?", (app_no,))
     db.execute("DELETE FROM harvesting WHERE farmer_app_no=?", (app_no,))
     db.execute("DELETE FROM farmer_slots WHERE farmer_app_no=? AND slot_type IN ('seed', 'harvesting')", (app_no,))
 
-    db.execute("UPDATE farmers SET status='Verified' WHERE app_no=?", (app_no,))
+    db.execute("UPDATE farmers SET status='Received by Procurement' WHERE app_no=?", (app_no,))
     db.commit()
 
-    flash("New seasonal crop cycle initiated! Land verification has been retained. You can now save your plowing details.", "success")
+    flash("New seasonal crop cycle initiated! Land verification retained. You can proceed with plowing and seed booking.", "success")
     return redirect(url_for("dashboard"))
 
 
@@ -581,9 +621,22 @@ def admin():
         my_slots.setdefault(r["farmer_app_no"], {})[r["slot_type"]] = r
 
     officers = {
-        r["farmer_app_no"]: r["officer_name"]
-        for r in db.execute("SELECT farmer_app_no, officer_name FROM officers GROUP BY farmer_app_no")
+        r["farmer_app_no"]: r
+        for r in db.execute("SELECT * FROM officers WHERE id IN (SELECT MAX(id) FROM officers GROUP BY farmer_app_no)")
     }
+    verifications = {r["farmer_app_no"]: r for r in db.execute("SELECT * FROM verification_results")}
+
+    now = datetime.now()
+    four_days_passed = {}
+    for f in active_farmers:
+        app_no = f["app_no"]
+        t_at = f["created_at"]
+        try:
+            dt = datetime.strptime(t_at, "%Y-%m-%d %H:%M")
+            is_past = (now - dt).total_seconds() >= (4 * 86400)
+        except Exception:
+            is_past = False
+        four_days_passed[app_no] = is_past
 
     stats = stats_for(db)
     
@@ -592,8 +645,46 @@ def admin():
         farmers=active_farmers, 
         my_slots=my_slots,
         officers=officers,
+        verifications=verifications,
+        four_days_passed=four_days_passed,
         stats=stats
     )
+
+
+@app.route("/admin/assign-officer/<app_no>", methods=["POST"])
+@admin_login_required
+def admin_assign_officer(app_no):
+    db = get_db()
+    officer_name = request.form.get("officer_name", "").strip()
+    officer_contact = request.form.get("officer_contact", "").strip()
+    if officer_name and officer_contact:
+        db.execute(
+            "INSERT INTO officers (farmer_app_no, officer_name, officer_contact, confirmed) VALUES (?,?,?,1)",
+            (app_no, officer_name, officer_contact),
+        )
+        db.execute("UPDATE farmers SET status='Verification Officer Assigned' WHERE app_no=?", (app_no,))
+        db.commit()
+        flash(f"Verification officer {officer_name} assigned for Application {app_no}.", "success")
+    return redirect(url_for("admin"))
+
+
+@app.route("/admin/force-slot/<app_no>", methods=["POST"])
+@admin_login_required
+def admin_force_slot(app_no):
+    db = get_db()
+    slot_date = request.form.get("slot_date")
+    slot_time = request.form.get("slot_time")
+    if slot_date and slot_time:
+        db.execute(
+            """INSERT INTO farmer_slots (farmer_app_no, slot_type, slot_date, slot_time)
+               VALUES (?, 'verification', ?, ?)
+               ON CONFLICT(farmer_app_no, slot_type)
+               DO UPDATE SET slot_date=excluded.slot_date, slot_time=excluded.slot_time""",
+            (app_no, slot_date, slot_time),
+        )
+        db.commit()
+        flash(f"Verification date & time set for farmer {app_no}.", "success")
+    return redirect(url_for("admin"))
 
 
 @app.route("/admin/decide/<app_no>", methods=["POST"])
@@ -604,10 +695,10 @@ def admin_decide(app_no):
     if decision == "transfer":
         now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
         db.execute(
-            "UPDATE farmers SET status='Procurement Centre', transferred_at=? WHERE app_no=?",
+            "UPDATE farmers SET status='Transferred to Procurement', transferred_at=? WHERE app_no=?",
             (now_str, app_no)
         )
-        flash(f"Farmer {app_no} transferred to Procurement Centre (Kishan Seva confirmed).", "success")
+        flash(f"Farmer {app_no} transferred to Procurement Centre.", "success")
     elif decision == "decline":
         db.execute("UPDATE farmers SET status='Declined' WHERE app_no=?", (app_no,))
         flash(f"Farmer {app_no} registration declined.", "error")
@@ -639,8 +730,7 @@ def procurement():
     db = get_db()
     farmers = db.execute(
         """SELECT * FROM farmers
-           WHERE status IN ('Procurement Centre','Verification Officer Assigned',
-                             'Verified','Social Point Assigned','Seed Distribution Done')
+           WHERE status IN ('Transferred to Procurement', 'Received by Procurement', 'Seed Distribution Done')
            ORDER BY created_at DESC"""
     ).fetchall()
     officers_by_farmer = {
@@ -669,22 +759,6 @@ def procurement():
         "SELECT * FROM slot_options WHERE slot_type='harvesting' ORDER BY slot_date, slot_time"
     ).fetchall()
 
-    now = datetime.now()
-    four_days_passed = {}
-    pending_farmers = []
-    for f in farmers:
-        app_no = f["app_no"]
-        t_at = f["transferred_at"] or f["created_at"]
-        try:
-            dt = datetime.strptime(t_at, "%Y-%m-%d %H:%M")
-            is_past = (now - dt).total_seconds() >= (4 * 86400)
-        except Exception:
-            is_past = False
-        four_days_passed[app_no] = is_past
-
-        if f["status"] != "Completed":
-            pending_farmers.append(f)
-
     return render_template(
         "procurement.html",
         farmers=farmers,
@@ -698,9 +772,17 @@ def procurement():
         verification_slots=verification_slots,
         seed_slots=seed_slots,
         harvesting_slots=harvesting_slots,
-        four_days_passed=four_days_passed,
-        pending_farmers=pending_farmers,
     )
+
+
+@app.route("/procurement/receive/<app_no>", methods=["POST"])
+@procurement_login_required
+def procurement_receive(app_no):
+    db = get_db()
+    db.execute("UPDATE farmers SET status='Received by Procurement' WHERE app_no=?", (app_no,))
+    db.commit()
+    flash(f"Farmer {app_no} received successfully! Seed Collection slot booking is now unlocked for this farmer.", "success")
+    return redirect(url_for("procurement"))
 
 
 @app.route("/api/districts/<state>")
@@ -730,6 +812,16 @@ def api_farmer_details(app_no):
         for r in db.execute("SELECT * FROM farmer_slots WHERE farmer_app_no=?", (app_no,)).fetchall()
     }
 
+    past_sessions = [
+        dict(r) for r in db.execute(
+            "SELECT * FROM farming_sessions WHERE farmer_app_no=? ORDER BY session_number DESC",
+            (app_no,)
+        ).fetchall()
+    ]
+    
+    # Exact calculation: match the number of completed sessions without double counting
+    total_sessions_count = max(1, len(past_sessions)) if (past_sessions or (harvesting and harvesting["status"] == "Transferred")) else 0
+
     auto_seed_kg = 50.0
     if plowing and plowing["quantity_approx"]:
         digits = re.findall(r"\d+", plowing["quantity_approx"])
@@ -742,6 +834,8 @@ def api_farmer_details(app_no):
             "app_no": farmer["app_no"],
             "name": farmer["name"],
             "mobile": farmer["mobile"],
+            "gender": farmer["gender"] or "—",
+            "category": farmer["category"] or "—",
             "aadhar": "[Aadhaar on File]",
             "kishan_id": farmer["kishan_id"] or "—",
             "state": farmer["state"],
@@ -756,6 +850,8 @@ def api_farmer_details(app_no):
             "transferred_at": farmer["transferred_at"],
         },
         "docs": {
+            "photo": farmer["photo_doc"],
+            "signature": farmer["signature_doc"],
             "kishan": farmer["kishan_doc"],
             "aadhar": farmer["aadhar_doc"],
             "land": farmer["land_doc"],
@@ -766,6 +862,8 @@ def api_farmer_details(app_no):
         "plowing": dict(plowing) if plowing else None,
         "seed_giving": dict(seed_giving) if seed_giving else None,
         "harvesting": dict(harvesting) if harvesting else None,
+        "past_sessions": past_sessions,
+        "total_sessions": total_sessions_count,
         "slots": slots,
         "auto_seed_kg": auto_seed_kg,
     })
@@ -807,43 +905,7 @@ def seed_giving_save(app_no):
     )
     db.execute("UPDATE farmers SET status='Seed Distribution Done' WHERE app_no=?", (app_no,))
     db.commit()
-    flash(f"Seed distribution saved for Application {app_no}. Status updated to 'Seed Distribution Done'.", "success")
-    return redirect(url_for("procurement"))
-
-
-@app.route("/procurement/force-slot/<app_no>", methods=["POST"])
-@procurement_login_required
-def procurement_force_slot(app_no):
-    db = get_db()
-    slot_date = request.form.get("slot_date")
-    slot_time = request.form.get("slot_time")
-    if slot_date and slot_time:
-        db.execute(
-            """INSERT INTO farmer_slots (farmer_app_no, slot_type, slot_date, slot_time)
-               VALUES (?, 'verification', ?, ?)
-               ON CONFLICT(farmer_app_no, slot_type)
-               DO UPDATE SET slot_date=excluded.slot_date, slot_time=excluded.slot_time""",
-            (app_no, slot_date, slot_time),
-        )
-        db.commit()
-        flash(f"Verification date & time assigned for farmer {app_no}.", "success")
-    return redirect(url_for("procurement"))
-
-
-@app.route("/procurement/assign-officer/<app_no>", methods=["POST"])
-@procurement_login_required
-def assign_officer(app_no):
-    db = get_db()
-    officer_name = request.form.get("officer_name", "").strip()
-    officer_contact = request.form.get("officer_contact", "").strip()
-    if officer_name and officer_contact:
-        db.execute(
-            "INSERT INTO officers (farmer_app_no, officer_name, officer_contact, confirmed) VALUES (?,?,?,1)",
-            (app_no, officer_name, officer_contact),
-        )
-        db.execute("UPDATE farmers SET status='Verification Officer Assigned' WHERE app_no=?", (app_no,))
-        db.commit()
-        flash(f"Verification officer {officer_name} assigned & confirmed for {app_no}.", "success")
+    flash(f"Seed distribution saved for Application {app_no}.", "success")
     return redirect(url_for("procurement"))
 
 
@@ -864,16 +926,6 @@ def add_slot():
     return redirect(url_for("procurement"))
 
 
-@app.route("/procurement/assign-social-point/<app_no>", methods=["POST"])
-@procurement_login_required
-def assign_social_point(app_no):
-    db = get_db()
-    db.execute("UPDATE farmers SET status='Social Point Assigned' WHERE app_no=?", (app_no,))
-    db.commit()
-    flash(f"Social point (seed collection) unlocked for {app_no}.", "success")
-    return redirect(url_for("procurement"))
-
-
 @app.route("/procurement/harvest-save", methods=["POST"])
 @procurement_login_required
 def harvest_save():
@@ -886,9 +938,8 @@ def harvest_save():
     crop2_name = request.form.get("crop2_name", "").strip()
     crop2_quantity = request.form.get("crop2_quantity", "").strip()
     crop2_amount = request.form.get("crop2_amount", "").strip()
-    quality = request.form.get("quality", "Grade A").strip()
+    quality = request.form.get("quality", "Grade A (Premium)").strip()
 
-    # Calculate total payout
     amt1_val = float(re.sub(r"[^\d.]", "", amount1 or "0") or 0)
     amt2_val = float(re.sub(r"[^\d.]", "", crop2_amount or "0") or 0)
     total_amt = str(amt1_val + amt2_val)
@@ -910,11 +961,40 @@ def harvest_save():
         (app_no, crop1_name, quantity1, amount1, crop2_name, crop2_quantity, crop2_amount, quality, total_amt),
     )
 
-    # Store genuine seasonal analytics points for charts
-    count_row = db.execute("SELECT COUNT(DISTINCT season) c FROM crop_analytics WHERE farmer_app_no=?", (app_no,)).fetchone()
-    current_season_idx = (count_row["c"] or 0) + 1
-    season_tag = f"Season {current_season_idx}"
+    sess_row = db.execute("SELECT COUNT(*) c FROM farming_sessions WHERE farmer_app_no=?", (app_no,)).fetchone()
+    session_num = (sess_row["c"] or 0) + 1
 
+    seed_row = db.execute("SELECT * FROM seed_giving WHERE farmer_app_no=?", (app_no,)).fetchone()
+    v_row = db.execute("SELECT * FROM verification_results WHERE farmer_app_no=?", (app_no,)).fetchone()
+    now_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+
+    db.execute(
+        """INSERT INTO farming_sessions
+           (farmer_app_no, session_number, seed_name, seed_quantity, seed_amount, payment_mode,
+            crop1_name, crop1_quantity, crop1_amount, crop2_name, crop2_quantity, crop2_amount,
+            total_harvest_amount, quality, officer_name, completed_at)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            app_no,
+            session_num,
+            seed_row["crop_name"] if seed_row else crop1_name,
+            seed_row["seed_amount_kg"] if seed_row else 0,
+            seed_row["price"] if seed_row else 0,
+            seed_row["payment_mode"] if seed_row else 'Cash',
+            crop1_name,
+            quantity1,
+            amount1,
+            crop2_name,
+            crop2_quantity,
+            crop2_amount,
+            total_amt,
+            quality,
+            v_row["officer_name"] if v_row else "Field Officer",
+            now_time
+        )
+    )
+
+    season_tag = f"Season {session_num}"
     q1_val = float(re.findall(r"[\d.]+", quantity1)[0]) if re.findall(r"[\d.]+", quantity1) else 15.0
     db.execute(
         "INSERT INTO crop_analytics (farmer_app_no, season, crop, quantity, amount) VALUES (?, ?, ?, ?, ?)",
@@ -930,7 +1010,7 @@ def harvest_save():
 
     db.execute("UPDATE farmers SET status='Completed' WHERE app_no=?", (app_no,))
     db.commit()
-    flash(f"Harvest data and DBT transfer recorded for Farmer {app_no}. Cycle finalized.", "success")
+    flash(f"Session {session_num} harvest recorded and finalized for Farmer {app_no}.", "success")
     return redirect(url_for("procurement"))
 
 
@@ -951,9 +1031,15 @@ def officer_login():
     ).fetchone()
 
     if row:
+        v = db.execute("SELECT verified FROM verification_results WHERE farmer_app_no=?", (row["f_app_no"],)).fetchone()
+        if v and v["verified"] == 1:
+            flash("Verification Done", "error")
+            return redirect(url_for("officer_login"))
+
         session["officer_farmer_app_no"] = row["f_app_no"]
         session["officer_name"] = row["officer_name"]
         return redirect(url_for("officer_form"))
+
     flash("Invalid officer login. User ID = assigned officer name, Password = farmer's name.", "error")
     return redirect(url_for("officer_login"))
 
@@ -972,45 +1058,95 @@ def officer_form():
     app_no = session["officer_farmer_app_no"]
     farmer = db.execute("SELECT * FROM farmers WHERE app_no=?", (app_no,)).fetchone()
 
-    if request.method == "POST":
-        fields = ["name_ok", "mobile_ok", "state_ok", "district_ok", "village_ok",
-                  "land_ok", "aadhar_doc_ok", "land_doc_ok", "kishan_doc_ok"]
-        values = {f: 1 if request.form.get(f) == "ok" else 0 for f in fields}
-        preference_crop = request.form.get("preference_crop", "")
-        all_ok = all(values.values())
-
-        db.execute(
-            """INSERT INTO verification_results
-               (farmer_app_no, name_ok, mobile_ok, state_ok, district_ok, village_ok,
-                land_ok, aadhar_doc_ok, land_doc_ok, kishan_doc_ok, preference_crop,
-                officer_name, verified, verified_at)
-               VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-               ON CONFLICT(farmer_app_no) DO UPDATE SET
-                 name_ok=excluded.name_ok, mobile_ok=excluded.mobile_ok,
-                 state_ok=excluded.state_ok, district_ok=excluded.district_ok,
-                 village_ok=excluded.village_ok, land_ok=excluded.land_ok,
-                 aadhar_doc_ok=excluded.aadhar_doc_ok, land_doc_ok=excluded.land_doc_ok,
-                 kishan_doc_ok=excluded.kishan_doc_ok, preference_crop=excluded.preference_crop,
-                 officer_name=excluded.officer_name, verified=excluded.verified,
-                 verified_at=excluded.verified_at""",
-            (
-                app_no, values["name_ok"], values["mobile_ok"], values["state_ok"],
-                values["district_ok"], values["village_ok"], values["land_ok"],
-                values["aadhar_doc_ok"], values["land_doc_ok"], values["kishan_doc_ok"],
-                preference_crop, session.get("officer_name"), 1 if all_ok else 0,
-                datetime.now().strftime("%Y-%m-%d %H:%M"),
-            ),
-        )
-        if all_ok:
-            db.execute("UPDATE farmers SET status='Verified' WHERE app_no=?", (app_no,))
-            flash("All checks passed — farmer marked as Verified!", "success")
-        else:
-            flash("Verification saved. Some checks failed, farmer not yet fully verified.", "error")
-        db.commit()
-        return redirect(url_for("officer_form"))
-
     existing = db.execute("SELECT * FROM verification_results WHERE farmer_app_no=?", (app_no,)).fetchone()
-    return render_template("officer_form.html", farmer=farmer, existing=existing, crops=CROPS)
+    if existing and existing["verified"] == 1:
+        session.pop("officer_farmer_app_no", None)
+        session.pop("officer_name", None)
+        flash("Verification Done", "error")
+        return redirect(url_for("officer_login"))
+
+    if request.method == "POST":
+        land_ok = 1 if request.form.get("land_ok") == "ok" else 0
+        aadhar_doc_ok = 1 if request.form.get("aadhar_doc_ok") == "ok" else 0
+        land_doc_ok = 1 if request.form.get("land_doc_ok") == "ok" else 0
+        kishan_doc_ok = 1 if request.form.get("kishan_doc_ok") == "ok" else 0
+        bank_doc_ok = 1 if request.form.get("bank_doc_ok") == "ok" else 0
+
+        if not land_ok:
+            corrected_land = request.form.get("corrected_land_decimal", "").strip()
+            if corrected_land:
+                try:
+                    db.execute("UPDATE farmers SET land_decimal=? WHERE app_no=?", (float(corrected_land), app_no))
+                except ValueError:
+                    pass
+
+        if not aadhar_doc_ok and request.files.get("corrected_aadhar_doc"):
+            new_file = save_upload(request.files.get("corrected_aadhar_doc"), "aadhar")
+            if new_file:
+                db.execute("UPDATE farmers SET aadhar_doc=? WHERE app_no=?", (new_file, app_no))
+
+        if not land_doc_ok and request.files.get("corrected_land_doc"):
+            new_file = save_upload(request.files.get("corrected_land_doc"), "land")
+            if new_file:
+                db.execute("UPDATE farmers SET land_doc=? WHERE app_no=?", (new_file, app_no))
+
+        if not kishan_doc_ok and request.files.get("corrected_kishan_doc"):
+            new_file = save_upload(request.files.get("corrected_kishan_doc"), "kishan")
+            if new_file:
+                db.execute("UPDATE farmers SET kishan_doc=? WHERE app_no=?", (new_file, app_no))
+
+        if not bank_doc_ok and request.files.get("corrected_bank_doc"):
+            new_file = save_upload(request.files.get("corrected_bank_doc"), "bank")
+            if new_file:
+                db.execute("UPDATE farmers SET bank_doc=? WHERE app_no=?", (new_file, app_no))
+
+        cursor = db.execute("PRAGMA table_info(verification_results)")
+        existing_cols = {row["name"] for row in cursor.fetchall()}
+
+        now_time = datetime.now().strftime("%Y-%m-%d %H:%M")
+        officer_name = session.get("officer_name")
+
+        data_map = {
+            "farmer_app_no": app_no,
+            "land_ok": land_ok,
+            "aadhar_doc_ok": aadhar_doc_ok,
+            "land_doc_ok": land_doc_ok,
+            "kishan_doc_ok": kishan_doc_ok,
+            "bank_doc_ok": bank_doc_ok,
+            "name_ok": 1,
+            "mobile_ok": 1,
+            "state_ok": 1,
+            "district_ok": 1,
+            "village_ok": 1,
+            "preference_crop": "",
+            "officer_name": officer_name,
+            "verified": 1,
+            "verified_at": now_time
+        }
+
+        active_cols = [c for c in data_map.keys() if c in existing_cols]
+        col_sql = ", ".join(active_cols)
+        val_placeholders = ", ".join(["?"] * len(active_cols))
+        update_assignments = ", ".join([f"{c}=excluded.{c}" for c in active_cols if c != "farmer_app_no"])
+        values = [data_map[c] for c in active_cols]
+
+        insert_sql = f"""
+            INSERT INTO verification_results ({col_sql})
+            VALUES ({val_placeholders})
+            ON CONFLICT(farmer_app_no) DO UPDATE SET {update_assignments}
+        """
+        db.execute(insert_sql, values)
+
+        db.execute("UPDATE farmers SET status='Verified' WHERE app_no=?", (app_no,))
+        db.commit()
+
+        session.pop("officer_farmer_app_no", None)
+        session.pop("officer_name", None)
+
+        flash("Verification Completed! You have been logged out.", "success")
+        return redirect(url_for("officer_login"))
+
+    return render_template("officer_form.html", farmer=farmer)
 
 
 if __name__ == "__main__":

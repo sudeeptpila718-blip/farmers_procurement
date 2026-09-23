@@ -6,7 +6,6 @@
   :root {
     --forest-900: #0e291e;
     --forest-700: #1b4931;
-    --forest-500: #2d7a52;
     --surface-white: #ffffff;
     --border-soft: #e2e8f0;
     --text-primary: #0f172a;
@@ -20,13 +19,6 @@
     margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom: 1px solid var(--border-soft);
-  }
-
-  .portal-title h2 {
-    margin: 0;
-    font-size: 24px;
-    color: var(--forest-900);
-    font-weight: 700;
   }
 
   .metrics-grid {
@@ -45,7 +37,6 @@
     align-items: flex-start;
     justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
 
   .metric-val {
@@ -64,25 +55,6 @@
     letter-spacing: 0.5px;
   }
 
-  .metric-icon-wrap {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-  }
-
-  .table-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 14px;
-  }
-
   .doc-chip {
     display: inline-flex;
     align-items: center;
@@ -96,26 +68,6 @@
     color: #334155;
     margin: 2px;
   }
-
-  .transferred-card {
-    background: #f0fdf4;
-    border: 1px solid #bbf7d0;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
-  .slot-pill {
-    display: inline-block;
-    background: #dcfce7;
-    color: #166534;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 11px;
-    margin-top: 3px;
-  }
 </style>
 {% endblock %}
 
@@ -128,9 +80,9 @@
 
 {% block content %}
 <div class="admin-header">
-  <div class="portal-title">
-    <h2>🌾 Kishan Seva Kendra &bull; Executive Portal</h2>
-    <p class="mini muted" style="margin:2px 0 0 0;">Monitor registrations, credential verifications, procurement handoffs, and multi-crop yield audits.</p>
+  <div>
+    <h2 style="margin:0; font-size:24px; color:#0e291e; font-weight:700;">🌾 Kishan Seva Kendra &bull; Executive Portal</h2>
+    <p class="mini muted" style="margin:2px 0 0 0;">Assign Verification Officers, review submitted documents, and transfer verified farmers to the Procurement Centre.</p>
   </div>
 </div>
 
@@ -140,7 +92,6 @@
       <div class="metric-val">{{ stats['total'] }}</div>
       <div class="metric-label">Total Registrations</div>
     </div>
-    <div class="metric-icon-wrap" style="background:#eff6ff; color:#2563eb;">📝</div>
   </div>
 
   <div class="metric-card" style="border-left: 4px solid #f59e0b;">
@@ -148,7 +99,6 @@
       <div class="metric-val" style="color:#b45309;">{{ stats['pending'] }}</div>
       <div class="metric-label">Active Pipeline</div>
     </div>
-    <div class="metric-icon-wrap" style="background:#fffbeb; color:#d97706;">⏳</div>
   </div>
 
   <div class="metric-card" style="border-left: 4px solid #10b981;">
@@ -156,7 +106,6 @@
       <div class="metric-val" style="color:#047857;">{{ stats['done'] }}</div>
       <div class="metric-label">Completed Cycles</div>
     </div>
-    <div class="metric-icon-wrap" style="background:#ecfdf5; color:#059669;">✅</div>
   </div>
 
   <div class="metric-card" style="border-left: 4px solid #8b5cf6;">
@@ -164,32 +113,18 @@
       <div class="metric-val" style="color:#6d28d9;">{{ stats['total_land'] }}</div>
       <div class="metric-label">Land Area (Decimals)</div>
     </div>
-    <div class="metric-icon-wrap" style="background:#f5f3ff; color:#7c3aed;">🚜</div>
-  </div>
-
-  <div class="metric-card" style="border-left: 4px solid #ea580c;">
-    <div>
-      <div class="metric-val" style="color:#c2410c;">{{ stats['total_crop_collected'] }}</div>
-      <div class="metric-label">Total Crop Collected</div>
-    </div>
-    <div class="metric-icon-wrap" style="background:#fff7ed; color:#ea580c;">🌾</div>
   </div>
 </div>
 
 <div class="card" style="margin-bottom: 28px;">
-  <div class="table-controls">
-    <div style="font-weight:700; font-size:15px; color:#1e293b; display:flex; align-items:center; gap:8px;">
-      <span>📋 Active Farmer Registrations</span>
-      <span class="badge badge-verify" id="recordCountBadge">{{ farmers|length }} Records</span>
-    </div>
-
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="activeSearchInput" placeholder="🔍 Search App No., Name..." onkeyup="filterActiveTable()" style="padding:8px 12px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; min-width:240px;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+    <div style="font-weight:700; font-size:15px; color:#1e293b;">
+      📋 Active Farmer Registrations
     </div>
   </div>
 
   <div class="table-wrap">
-    <table id="activeFarmersTable">
+    <table>
       <thead>
         <tr>
           <th>App No.</th>
@@ -197,15 +132,18 @@
           <th>Farmland Specs</th>
           <th>Credential Docs</th>
           <th>Current Stage</th>
-          <th style="min-width: 230px;">Handoff &amp; Progress Details</th>
+          <th style="min-width: 250px;">Assign Officer / Transfer to Procurement</th>
         </tr>
       </thead>
       <tbody>
         {% for f in farmers %}
         {% set slots = my_slots.get(f['app_no'], {}) %}
-        {% set officer_name = officers.get(f['app_no']) %}
-        <tr class="farmer-row">
-          <td><strong style="color:#0f172a; font-size:14px;">#{{ f['app_no'] }}</strong></td>
+        {% set officer = officers.get(f['app_no']) %}
+        {% set v_res = verifications.get(f['app_no']) %}
+        {% set is_expired = four_days_passed.get(f['app_no'], False) %}
+
+        <tr>
+          <td><strong style="font-size:14px;">#{{ f['app_no'] }}</strong></td>
           <td>
             <div style="font-weight:600; color:#1e293b;">{{ f['name'] }}</div>
             <div class="mini">📱 {{ f['mobile'] }}</div>
@@ -227,44 +165,68 @@
           <td>
             <span class="badge 
               {% if f['status'] == 'Kishan Seva Kendra' %}badge-app
-              {% elif f['status'] == 'Procurement Centre' %}badge-procurement
               {% elif f['status'] == 'Verification Officer Assigned' %}badge-verify
               {% elif f['status'] == 'Verified' %}badge-verified
-              {% elif f['status'] == 'Social Point Assigned' %}badge-social
+              {% elif f['status'] == 'Transferred to Procurement' %}badge-procurement
+              {% elif f['status'] == 'Received by Procurement' %}badge-social
               {% elif f['status'] == 'Seed Distribution Done' %}badge-verified
               {% else %}badge-completed{% endif %}">
               {{ f['status'] }}
             </span>
           </td>
           <td>
-            {% if f['status'] == 'Kishan Seva Kendra' %}
-              <div style="display:flex; gap:6px;">
-                <form method="POST" action="{{ url_for('admin_decide', app_no=f['app_no']) }}" style="display:inline; margin:0;">
-                  <input type="hidden" name="decision" value="transfer">
-                  <button type="submit" class="btn btn-green btn-sm">Transfer ➔</button>
-                </form>
-                <form method="POST" action="{{ url_for('admin_decide', app_no=f['app_no']) }}" style="display:inline; margin:0;">
-                  <input type="hidden" name="decision" value="decline">
-                  <button type="submit" class="btn btn-red btn-sm" onclick="return confirm('Decline registration?');">Decline</button>
-                </form>
+            {% if f['status'] == 'Verified' %}
+              <!-- After verification completed, transfer to procurement center -->
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:8px 10px; border-radius:6px; margin-bottom:6px;">
+                <div class="mini" style="color:#15803d; font-weight:700;">✅ Verification Passed by {{ v_res['officer_name'] if v_res else 'Officer' }}</div>
               </div>
+              <form method="POST" action="{{ url_for('admin_decide', app_no=f['app_no']) }}" style="display:inline; margin:0;">
+                <input type="hidden" name="decision" value="transfer">
+                <button type="submit" class="btn btn-green btn-sm btn-block">Transfer to Procurement Centre ➔</button>
+              </form>
+
+            {% elif f['status'] in ['Transferred to Procurement', 'Received by Procurement', 'Seed Distribution Done'] %}
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:8px 10px; border-radius:6px; font-size:12px;">
+                <span style="color:#15803d; font-weight:700;">Transferred to Procurement Centre</span>
+                <div class="mini muted" style="margin-top:2px;">Verified by: {{ officer['officer_name'] if officer else 'Assigned Officer' }}</div>
+              </div>
+
+            {% elif officer %}
+              <div style="background:#fffbeb; border:1px solid #fde68a; padding:8px 10px; border-radius:6px; font-size:12px;">
+                <div><strong>Assigned Officer:</strong> {{ officer['officer_name'] }} ({{ officer['officer_contact'] }})</div>
+                <div class="mini muted" style="margin-top:3px;">Status: Awaiting field inspection</div>
+              </div>
+
+            {% elif slots.get('verification') %}
+              <!-- Farmer booked slot: Admin assigns verification officer -->
+              <form method="POST" action="{{ url_for('admin_assign_officer', app_no=f['app_no']) }}" style="background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #cbd5e1;">
+                <div class="mini" style="margin-bottom:4px;"><strong>Slot Booked:</strong> {{ slots['verification']['slot_date'] }} ({{ slots['verification']['slot_time'] }})</div>
+                <input type="text" name="officer_name" placeholder="Officer Name" required style="width:100%; margin-bottom:4px; font-size:12px;">
+                <input type="text" name="officer_contact" placeholder="Officer Phone" required style="width:100%; margin-bottom:4px; font-size:12px;">
+                <button type="submit" class="btn btn-primary btn-sm btn-block">Assign Officer</button>
+              </form>
+
+            {% elif is_expired %}
+              <!-- 4 days passed without booking -->
+              <div class="mini" style="color:var(--danger); margin-bottom:4px;"><strong>4 days lapsed:</strong> Force verification slot:</div>
+              <form method="POST" action="{{ url_for('admin_force_slot', app_no=f['app_no']) }}">
+                <input type="date" name="slot_date" required style="margin-bottom:4px; font-size:12px; width:100%;">
+                <input type="time" name="slot_time" required style="margin-bottom:4px; font-size:12px; width:100%;">
+                <button type="submit" class="btn btn-wheat btn-sm btn-block">Set Slot</button>
+              </form>
+
             {% else %}
-              <div class="transferred-card">
-                <div><strong>Transferred:</strong> {{ f['transferred_at'] or 'Confirmed' }}</div>
-                <div style="margin-top:2px;">
-                  {% if officer_name %}
-                    <div><strong>Assigned Officer:</strong> {{ officer_name }}</div>
-                  {% endif %}
-                  {% if slots.get('verification') %}
-                    <span class="slot-pill">Land Verify: {{ slots['verification']['slot_date'] }} ({{ slots['verification']['slot_time'] }})</span>
-                  {% elif slots.get('seed') %}
-                    <span class="slot-pill">Seed Slot: {{ slots['seed']['slot_date'] }} ({{ slots['seed']['slot_time'] }})</span>
-                  {% elif slots.get('harvesting') %}
-                    <span class="slot-pill">Harvest Slot: {{ slots['harvesting']['slot_date'] }} ({{ slots['harvesting']['slot_time'] }})</span>
-                  {% else %}
-                    <span class="muted mini">Awaiting farmer slot booking</span>
-                  {% endif %}
-                </div>
+              <div class="mini muted" style="padding:8px; background:#f8fafc; border-radius:6px; border:1px dashed #cbd5e1;">
+                🔒 Waiting for farmer to book Land Verification slot.
+              </div>
+            {% endif %}
+
+            {% if f['status'] == 'Kishan Seva Kendra' %}
+              <div style="margin-top:6px;">
+                <form method="POST" action="{{ url_for('admin_decide', app_no=f['app_no']) }}" style="display:inline;">
+                  <input type="hidden" name="decision" value="decline">
+                  <button type="submit" class="btn btn-red btn-sm" onclick="return confirm('Decline registration?');">Decline Application</button>
+                </form>
               </div>
             {% endif %}
           </td>
@@ -279,18 +241,16 @@
   </div>
 </div>
 
-<!-- History Search Modal (With Two Crops Details) -->
+<!-- History Search Modal -->
 <div id="adminHistoryModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(15,23,42,0.65); backdrop-filter:blur(2px); overflow-y:auto;">
   <div class="card" style="max-width:860px; margin:48px auto; background:#fff; border-radius:12px; padding:28px;">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:18px;">
-      <div>
-        <h3 style="margin:0; font-size:18px; color:#0f172a;">📜 Complete Farmer Lifecycle &amp; Two-Crop Audit</h3>
-      </div>
+      <h3 style="margin:0; font-size:18px; color:#0f172a;">📜 Complete Farmer Lifecycle &amp; Farming Sessions Audit</h3>
       <button type="button" class="btn btn-red btn-sm" onclick="closeAdminHistoryModal()">✕ Close</button>
     </div>
 
     <div style="display:flex; gap:10px; margin-bottom:18px;">
-      <input type="text" id="admin_history_search_input" placeholder="Enter 4-digit Application Number (e.g. 1340)..." style="flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px;">
+      <input type="text" id="admin_history_search_input" placeholder="Enter Application Number (e.g. 1340)..." style="flex:1; padding:10px 14px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px;">
       <button type="button" class="btn btn-primary btn-sm" onclick="searchAdminFarmerHistory()" style="padding:0 20px;">
         Search History
       </button>
@@ -317,25 +277,6 @@ window.onclick = function(event) {
   if (event.target === document.getElementById('adminHistoryModal')) closeAdminHistoryModal();
 };
 
-function filterActiveTable() {
-  const query = document.getElementById('activeSearchInput').value.toLowerCase().trim();
-  const rows = document.querySelectorAll('#activeFarmersTable tbody .farmer-row');
-  let visibleCount = 0;
-
-  rows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    if (!query || text.includes(query)) {
-      row.style.display = '';
-      visibleCount++;
-    } else {
-      row.style.display = 'none';
-    }
-  });
-
-  const badge = document.getElementById('recordCountBadge');
-  if (badge) badge.innerText = `${visibleCount} Records`;
-}
-
 async function searchAdminFarmerHistory() {
   const appNo = document.getElementById('admin_history_search_input').value.trim();
   if (!appNo) return alert('Please enter an application number');
@@ -358,6 +299,30 @@ async function searchAdminFarmerHistory() {
     const p = data.plowing;
     const s = data.seed_giving;
     const h = data.harvesting;
+    const pastSessions = data.past_sessions || [];
+    const totalSessions = data.total_sessions || 1;
+
+    let pastSessionsHtml = '';
+    if (totalSessions > 1 && pastSessions.length > 0) {
+      pastSessionsHtml += `<h5 style="margin:16px 0 8px 0; color:#1e293b;">🗓️ Archived Past Seasons (${pastSessions.length}):</h5>`;
+      pastSessions.forEach(ps => {
+        pastSessionsHtml += `
+          <div style="background:#fff; border:1px solid #e2e8f0; border-left:4px solid #2e7d32; border-radius:6px; padding:12px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <strong style="color:#15803d;">Season #${ps.session_number} (${ps.completed_at})</strong>
+              <span class="badge badge-completed">Archived</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:6px; font-size:13px;">
+              <div><strong>Seed:</strong> ${ps.seed_name} (${ps.seed_quantity} kg) &bull; ₹${ps.seed_amount}</div>
+              <div><strong>Officer:</strong> ${ps.officer_name}</div>
+              <div><strong>Crop 1:</strong> ${ps.crop1_name} &bull; ${ps.crop1_quantity} &bull; ₹${ps.crop1_amount}</div>
+              ${ps.crop2_name ? `<div><strong>Crop 2:</strong> ${ps.crop2_name} &bull; ${ps.crop2_quantity} &bull; ₹${ps.crop2_amount}</div>` : ''}
+              <div><strong>Quality:</strong> ${ps.quality} &bull; <strong>Total Paid:</strong> ₹${ps.total_harvest_amount}</div>
+            </div>
+          </div>
+        `;
+      });
+    }
 
     container.innerHTML = `
       <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:20px; border-radius:10px;">
@@ -366,15 +331,15 @@ async function searchAdminFarmerHistory() {
             <h4 style="margin:0; font-size:18px; color:#0f172a;">${f.name}</h4>
             <div class="mini muted">App #${f.app_no} &bull; Mobile: ${f.mobile} &bull; Land: ${f.land_decimal} dec</div>
           </div>
-          <span class="badge ${f.status === 'Completed' ? 'badge-completed' : (f.status === 'Declined' ? 'badge-declined' : 'badge-verified')}">
-            ${f.status}
-          </span>
+          <div style="text-align:right;">
+            <span class="badge ${f.status === 'Completed' ? 'badge-completed' : (f.status === 'Declined' ? 'badge-declined' : 'badge-verified')}">${f.status}</span><br>
+            <span class="badge badge-app" style="margin-top:4px;">Total Farming Seasons: ${totalSessions}</span>
+          </div>
         </div>
 
         <hr style="margin:12px 0; border:none; border-top:1px dashed #cbd5e1;">
 
-        <!-- 2-Crops Details Breakdown -->
-        <h5 style="margin:0 0 8px 0; color:#1e293b;">🌾 Two-Crops Harvest Yield &amp; Payout:</h5>
+        <h5 style="margin:0 0 8px 0; color:#1e293b;">🌾 Active / Latest Season Harvest:</h5>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:12px; margin-bottom:14px;">
           <div style="background:#fff; padding:12px; border-radius:8px; border:1px solid #fed7aa;">
             <div style="font-weight:700; color:#c2410c;">1. Primary Crop</div>
@@ -391,16 +356,18 @@ async function searchAdminFarmerHistory() {
           </div>
         </div>
 
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:14px;">
           <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #f1f5f9;">
-            <strong>Verification Result:</strong><br>
-            ${v && v.verified ? `<span style="color:#16a34a;">Verified ✅</span> &bull; Preferred: ${v.preference_crop || '—'}` : '<span class="muted">Pending / Not Verified</span>'}
+            <strong>Verification Officer:</strong><br>
+            ${v ? `Officer: <strong>${v.officer_name || 'Assigned'}</strong> (${v.verified ? 'Verified ✅' : 'Pending'})` : '<span class="muted">Pending / Not Verified</span>'}
           </div>
           <div style="background:#fff; padding:10px; border-radius:6px; border:1px solid #f1f5f9;">
             <strong>Seed Distributed:</strong><br>
-            ${s ? `${s.seed_amount_kg} kg &bull; Paid: ₹${s.price} (${s.payment_mode})` : '<span class="muted">Pending</span>'}
+            ${s ? `Seed: <strong>${s.crop_name}</strong> (${s.seed_amount_kg} kg) &bull; Cost: ₹${s.price} (${s.payment_mode})` : '<span class="muted">Pending</span>'}
           </div>
         </div>
+
+        ${pastSessionsHtml}
       </div>
     `;
   } catch (err) {

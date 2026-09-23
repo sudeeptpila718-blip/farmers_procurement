@@ -1,166 +1,446 @@
 {% extends "base.html" %}
-{% block title %}New Registration — Farmers Procurement System{% endblock %}
+{% block title %}Farmer Registration — Farmers Procurement System{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --brand-forest: #1b5e20;
+    --brand-accent: #2e7d32;
+    --brand-light: #f0fdf4;
+    --surface-white: #ffffff;
+    --border-color: #cbd5e1;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+  }
+
+  .reg-wrapper {
+    max-width: 900px;
+    margin: 30px auto;
+  }
+
+  .reg-card {
+    background: var(--surface-white);
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 32px 36px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  .reg-header {
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 18px;
+    margin-bottom: 24px;
+  }
+
+  .reg-header h2 {
+    margin: 0 0 6px 0;
+    font-size: 24px;
+    color: var(--brand-forest);
+    font-weight: 700;
+  }
+
+  .reg-section {
+    margin-bottom: 28px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 22px 24px;
+    background: #ffffff;
+  }
+
+  .reg-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 10px;
+  }
+
+  .form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 14px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="tel"],
+  .form-group input[type="number"],
+  .form-group select {
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    border-color: var(--brand-accent);
+  }
+
+  .upload-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+
+  .upload-box:hover {
+    border-color: var(--brand-accent);
+    background: #f0fdf4;
+  }
+
+  .upload-box input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .upload-preview {
+    max-height: 90px;
+    max-width: 100%;
+    margin-top: 8px;
+    border-radius: 4px;
+    display: none;
+    object-fit: contain;
+  }
+
+  .upload-label-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+  }
+
+  .radio-pill-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .radio-pill-group label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .form-grid-2,
+    .form-grid-3 {
+      grid-template-columns: 1fr;
+    }
+    .reg-card {
+      padding: 20px;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block nav %}
   <a href="{{ url_for('index') }}">← Back to Login</a>
 {% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:820px;margin:0 auto;">
-  <h2>🌾 Farmers Registration</h2>
-  <p class="muted mini">Fields marked with an asterisk (*) are required. Once submitted, you'll get a unique 4-digit application number and land on your dashboard.</p>
+<div class="reg-wrapper">
+  <div class="reg-card">
+    <div class="reg-header">
+      <h2>🌾 Farmer Enrollment Portal</h2>
+      <p class="mini muted" style="margin: 0;">Register your credentials and agricultural land to enter the state procurement lifecycle.</p>
+    </div>
 
-  <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
-
-    <fieldset>
-      <legend>1. Personal Details</legend>
-
-      <label>Name *</label>
-      <input type="text" name="name" required>
-
-      <label>Mobile No. * (this becomes your login password)</label>
-      <input type="tel" name="mobile" pattern="[0-9]{10}" placeholder="10-digit number" required>
-
-      <label>Kishan ID (optional)</label>
-      <input type="text" name="kishan_id" placeholder="If you already hold a Kishan Card">
-      <label>Upload Kishan Card Document</label>
-      <input type="file" name="kishan_doc">
-
-      <label>Aadhar Number * (12 digit)</label>
-      <input type="text" name="aadhar" pattern="[0-9]{12}" maxlength="12" placeholder="12-digit Aadhar number" required>
-      <label>Upload Aadhar Document *</label>
-      <input type="file" name="aadhar_doc" required>
-    </fieldset>
-
-    <fieldset>
-      <legend>2. Land Information</legend>
-
-      <label>Do you have land?</label>
-      <div class="radio-group">
-        <label><input type="radio" name="has_land" value="Yes" checked onclick="toggleLand(true)"> Yes</label>
-        <label><input type="radio" name="has_land" value="No" onclick="toggleLand(false)"> No</label>
-      </div>
-
-      <div id="land-details">
-        <label>Land Ownership</label>
-        <div class="radio-group">
-          <label><input type="radio" name="land_type" value="Lease" checked> Give on Lease</label>
-          <label><input type="radio" name="land_type" value="Own"> Own Farming</label>
+    <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
+      
+      <!-- 1. Personal Details -->
+      <div class="reg-section">
+        <div class="reg-section-title">
+          <span>👤 1. Personal &amp; Identity Profile</span>
         </div>
 
-        <label>Land Area (in decimal) *</label>
-        <input type="number" step="0.01" name="land_decimal" placeholder="e.g. 120.50">
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Full Legal Name *</label>
+            <input type="text" name="name" placeholder="Enter name as per Aadhaar" required>
+          </div>
 
-        <label>Upload Land Documents *</label>
-        <input type="file" name="land_doc">
+          <div class="form-group">
+            <label>Primary Mobile Number * (Login Password)</label>
+            <input type="tel" name="mobile" pattern="[0-9]{10}" maxlength="10" placeholder="10-digit mobile number" required>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label>Gender *</label>
+            <select name="gender" required>
+              <option value="">-- Select Gender --</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Farmer Social Category</label>
+            <select name="category">
+              <option value="General">General</option>
+              <option value="OBC">OBC</option>
+              <option value="SC">SC</option>
+              <option value="ST">ST</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Kishan Card ID (Optional)</label>
+            <input type="text" name="kishan_id" placeholder="Kishan Card Number">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Aadhaar Card Number * (12 Digits)</label>
+          <input type="text" name="aadhar" pattern="[0-9]{12}" maxlength="12" placeholder="12-digit Aadhaar number" required>
+        </div>
+
+        <!-- Biometrics & Profile Uploads -->
+        <div class="form-grid-3" style="margin-top: 10px;">
+          <div class="form-group">
+            <label>Farmer Profile Photograph *</label>
+            <div class="upload-box">
+              <input type="file" name="photo_doc" accept="image/*" onchange="previewImage(this, 'photoPreview')" required>
+              <div class="upload-label-text">📷 Upload Photo</div>
+              <img id="photoPreview" class="upload-preview" alt="Photo Preview">
+            </div>
+            <span class="mini muted" style="margin-top: 4px;">Passport-size photo (JPG, PNG)</span>
+          </div>
+
+          <div class="form-group">
+            <label>Signature / Thumb Impression *</label>
+            <div class="upload-box">
+              <input type="file" name="signature_doc" accept="image/*" onchange="previewImage(this, 'sigPreview')" required>
+              <div class="upload-label-text">✍️ Upload Signature</div>
+              <img id="sigPreview" class="upload-preview" alt="Signature Preview">
+            </div>
+            <span class="mini muted" style="margin-top: 4px;">Clear scan on white paper</span>
+          </div>
+
+          <div class="form-group">
+            <label>Aadhaar Card Document *</label>
+            <div class="upload-box">
+              <input type="file" name="aadhar_doc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewDoc(this, 'aadharLabel')" required>
+              <div id="aadharLabel" class="upload-label-text">📄 Upload Aadhaar Copy</div>
+            </div>
+            <span class="mini muted" style="margin-top: 4px;">PDF or Image format</span>
+          </div>
+        </div>
       </div>
-    </fieldset>
 
-    <fieldset>
-      <legend>3. Address</legend>
+      <!-- 2. Farmland Specifications (Do you have land removed) -->
+      <div class="reg-section">
+        <div class="reg-section-title">
+          <span>🚜 2. Farmland &amp; Agriculture Details</span>
+        </div>
 
-      <label>State *</label>
-      <select name="state" id="state-select" onchange="loadDistricts()" required>
-        <option value="">-- Select State --</option>
-        {% for s in states.keys() %}
-          <option value="{{ s }}">{{ s }}</option>
-        {% endfor %}
-      </select>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Land Ownership Model *</label>
+            <div class="radio-pill-group">
+              <label>
+                <input type="radio" name="land_type" value="Own" checked>
+                Own Cultivation
+              </label>
+              <label>
+                <input type="radio" name="land_type" value="Lease">
+                Leased Land
+              </label>
+            </div>
+          </div>
 
-      <label>District *</label>
-      <select name="district" id="district-select" required>
-        <option value="">-- Select State First --</option>
-      </select>
+          <div class="form-group">
+            <label>Total Farmland Area (in Decimals) *</label>
+            <input type="number" step="0.01" name="land_decimal" placeholder="e.g. 120.50" required>
+          </div>
+        </div>
 
-      <label>Village Name *</label>
-      <input type="text" name="village" required>
+        <div class="form-grid-2" style="margin-top: 8px;">
+          <div class="form-group">
+            <label>Land Deeds / RoR / Khatian Document *</label>
+            <div class="upload-box">
+              <input type="file" name="land_doc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewDoc(this, 'landDocLabel')" required>
+              <div id="landDocLabel" class="upload-label-text">📑 Upload Land Record</div>
+            </div>
+          </div>
 
-      <label>Panchayat Name *</label>
-      <input type="text" name="panchayat" required>
-    </fieldset>
-
-    <fieldset>
-      <legend>4. Bank Details</legend>
-
-      <label>Bank Account Number *</label>
-      <input type="text" name="bank_account" required>
-
-      <label>Upload Bank Passbook Picture *</label>
-      <input type="file" name="bank_doc" required>
-
-      <label>IFSC Code *</label>
-      <input type="text" name="ifsc" required>
-
-      <label>Select Bank *</label>
-      <select name="bank_choice" id="bank-choice" onchange="toggleOtherBank()" required>
-        <option value="">-- Select Bank --</option>
-        {% for b in banks %}
-          <option value="{{ b }}">{{ b }}</option>
-        {% endfor %}
-      </select>
-      <div id="other-bank-wrap" style="display:none;">
-        <label>Bank Name (Others)</label>
-        <input type="text" name="bank_other" placeholder="Type your bank name">
+          <div class="form-group">
+            <label>Kishan Card Document (If Available)</label>
+            <div class="upload-box">
+              <input type="file" name="kishan_doc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewDoc(this, 'kishanDocLabel')">
+              <div id="kishanDocLabel" class="upload-label-text">📋 Upload Kishan Card</div>
+            </div>
+          </div>
+        </div>
       </div>
-    </fieldset>
 
-    <button type="submit" class="btn btn-primary btn-block">Submit Registration</button>
-  </form>
+      <!-- 3. Residential Address -->
+      <div class="reg-section">
+        <div class="reg-section-title">
+          <span>📍 3. Residential &amp; Village Address</span>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>State *</label>
+            <select name="state" id="state-select" onchange="loadDistricts()" required>
+              <option value="">-- Select State --</option>
+              {% for s in states.keys() %}
+                <option value="{{ s }}">{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>District *</label>
+            <select name="district" id="district-select" required>
+              <option value="">-- Select State First --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Village Name *</label>
+            <input type="text" name="village" placeholder="Enter Village" required>
+          </div>
+
+          <div class="form-group">
+            <label>Gram Panchayat / Block *</label>
+            <input type="text" name="panchayat" placeholder="Enter Panchayat Name" required>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Banking Information -->
+      <div class="reg-section">
+        <div class="reg-section-title">
+          <span>🏦 4. Direct Benefit Transfer (DBT) Bank Information</span>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Bank Account Number *</label>
+            <input type="text" name="bank_account" placeholder="Enter Account Number" required>
+          </div>
+
+          <div class="form-group">
+            <label>IFSC Code *</label>
+            <input type="text" name="ifsc" placeholder="e.g. SBIN0001234" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label>Bank Name *</label>
+            <select name="bank_choice" id="bank-choice" onchange="toggleOtherBank()" required>
+              <option value="">-- Select Bank --</option>
+              {% for b in banks %}
+                <option value="{{ b }}">{{ b }}</option>
+              {% endfor %}
+            </select>
+            <div id="other-bank-wrap" style="display:none; margin-top:8px;">
+              <input type="text" name="bank_other" placeholder="Specify Bank Name">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Bank Passbook / Cancelled Cheque Copy *</label>
+            <div class="upload-box">
+              <input type="file" name="bank_doc" accept=".jpg,.jpeg,.png,.pdf" onchange="previewDoc(this, 'bankDocLabel')" required>
+              <div id="bankDocLabel" class="upload-label-text">💳 Upload Passbook Picture</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" style="padding: 14px; font-size: 16px; font-weight: 700; border-radius: 8px;">
+        Complete &amp; Submit Registration
+      </button>
+    </form>
+  </div>
 </div>
-{% endblock %}
 
-{% block extra_scripts %}
 <script>
-// Primary: Load districts dynamically via the API endpoint
-async function loadDistricts() {
-  const stateSelect = document.getElementById('state-select');
+const districtData = JSON.parse('{{ states | tojson | safe }}');
+
+function loadDistricts() {
+  const state = document.getElementById('state-select').value;
   const districtSelect = document.getElementById('district-select');
-  const state = stateSelect.value.trim();
-
-  districtSelect.innerHTML = '<option value="">-- Select District --</option>';
-
-  if (!state) {
+  districtSelect.innerHTML = '';
+  const list = districtData[state] || [];
+  if (list.length === 0) {
     districtSelect.innerHTML = '<option value="">-- Select State First --</option>';
     return;
   }
-
-  try {
-    const res = await fetch('/api/districts/' + encodeURIComponent(state));
-    const districts = await res.json();
-
-    if (districts && districts.length > 0) {
-      districtSelect.innerHTML = '<option value="">-- Select District --</option>';
-      districts.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d;
-        opt.textContent = d;
-        districtSelect.appendChild(opt);
-      });
-    } else {
-      districtSelect.innerHTML = '<option value="">No districts found for this state</option>';
-    }
-  } catch (err) {
-    console.error('Failed to fetch districts:', err);
-    districtSelect.innerHTML = '<option value="">Error loading districts</option>';
-  }
-}
-
-function toggleLand(hasLand) {
-  const details = document.getElementById('land-details');
-  if (details) details.style.display = hasLand ? 'block' : 'none';
+  districtSelect.innerHTML = '<option value="">-- Select District --</option>' +
+    list.map(d => `<option value="${d}">${d}</option>`).join('');
 }
 
 function toggleOtherBank() {
   const val = document.getElementById('bank-choice').value;
-  const otherWrap = document.getElementById('other-bank-wrap');
-  if (otherWrap) otherWrap.style.display = (val === 'Others') ? 'block' : 'none';
+  document.getElementById('other-bank-wrap').style.display = (val === 'Others') ? 'block' : 'none';
 }
 
-// Ensure districts load if the state was pre-selected on page reload
-document.addEventListener('DOMContentLoaded', () => {
-  const stateVal = document.getElementById('state-select').value;
-  if (stateVal) {
-    loadDistricts();
+function previewImage(input, previewId) {
+  const preview = document.getElementById(previewId);
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+    }
+    reader.readAsDataURL(input.files[0]);
   }
-});
+}
+
+function previewDoc(input, labelId) {
+  const label = document.getElementById(labelId);
+  if (input.files && input.files[0]) {
+    label.innerText = '✅ ' + input.files[0].name;
+    label.style.color = '#15803d';
+  }
+}
 </script>
 {% endblock %}
