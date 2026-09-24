@@ -5,15 +5,22 @@
 {% endblock %}
 
 {% block content %}
-<div class="card login-card">
+<div class="card login-card" style="max-width:440px; margin:40px auto;">
   <h2>🧑‍💼 Verification Officer Login</h2>
+  <p class="mini muted" style="margin-bottom:18px;">Enter your assigned officer name and the name of the farmer you are visiting.</p>
+
   <form method="POST" action="{{ url_for('officer_login') }}">
-    <label>User ID (your officer name, as assigned by Procurement Center)</label>
-    <input type="text" name="username" required>
-    <label>Password (name of the farmer you are visiting)</label>
-    <input type="password" name="password" required>
-    <button type="submit" class="btn btn-primary btn-block">Login</button>
+    <label>User ID (Your Officer Name)</label>
+    <input type="text" name="username" placeholder="e.g. S. Chatterjee" required style="width:100%; margin-bottom:12px;">
+
+    <label>Password (Farmer Name)</label>
+    <input type="password" name="password" placeholder="e.g. Sudeept Pila" required style="width:100%; margin-bottom:18px;">
+
+    <button type="submit" class="btn btn-primary btn-block">Login to Verification Form</button>
   </form>
-  <p class="mini muted" style="margin-top:14px;">You'll only be able to log in once the Procurement Center has assigned you to a farmer for verification.</p>
+
+  <div class="mini muted" style="margin-top:16px; padding:10px; background:#f8fafc; border-radius:6px; border:1px dashed #cbd5e1;">
+    ℹ️ Note: If verification for this farmer has already been submitted, login will be locked with <strong>"Verification Done"</strong>.
+  </div>
 </div>
 {% endblock %}
