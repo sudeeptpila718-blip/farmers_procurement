@@ -279,7 +279,20 @@ def save_upload(file_storage, prefix):
     return fname
 
 
-def stats_for(db, min_status_index=0):
+def parse_quantity_to_kg(qty_str):
+    if not qty_str:
+        return 0.0
+    val_str = str(qty_str).strip()
+    digits = re.findall(r"[\d.]+", val_str)
+    if not digits:
+        return 0.0
+    qty = float(digits[0])
+    if "quintal" in val_str.lower() or "qtl" in val_str.lower():
+        return qty * 100.0
+    return qty
+
+
+def stats_for(db):
     total = db.execute("SELECT COUNT(*) c FROM farmers").fetchone()["c"]
     pending = db.execute(
         "SELECT COUNT(*) c FROM farmers WHERE status NOT IN ('Completed','Declined')"
@@ -294,9 +307,9 @@ def stats_for(db, min_status_index=0):
     collected_row = db.execute("SELECT COALESCE(SUM(price), 0) s FROM seed_giving").fetchone()
     money_collected = round(collected_row["s"] or 0, 2)
 
-    harvest_rows = db.execute("SELECT amount, total_amount, quantity, crop2_quantity FROM harvesting").fetchall()
+    harvest_rows = db.execute("SELECT amount, total_amount, quantity, crop2_quantity, crop2_amount FROM harvesting").fetchall()
     money_given = 0.0
-    total_crop_qty = 0.0
+    total_crop_qty_kg = 0.0
     for hr in harvest_rows:
         try:
             amt_str = hr["total_amount"] or hr["amount"] or "0"
@@ -304,13 +317,8 @@ def stats_for(db, min_status_index=0):
             money_given += val
         except ValueError:
             pass
-        for q_field in ["quantity", "crop2_quantity"]:
-            try:
-                q_digits = re.findall(r"[\d.]+", hr[q_field] or "")
-                if q_digits:
-                    total_crop_qty += float(q_digits[0])
-            except (ValueError, IndexError):
-                pass
+        total_crop_qty_kg += parse_quantity_to_kg(hr["quantity"])
+        total_crop_qty_kg += parse_quantity_to_kg(hr["crop2_quantity"])
 
     return {
         "total": total,
@@ -318,10 +326,56 @@ def stats_for(db, min_status_index=0):
         "pending": pending,
         "done": done,
         "total_land": round(land_row["s"] or 0, 2),
-        "total_crop_collected": round(total_crop_qty, 1),
+        "total_crop_collected_kg": round(total_crop_qty_kg, 1),
         "money_collected": round(money_collected, 2),
         "money_given": round(money_given, 2),
     }
+
+
+def get_crops_procurement_summary(db):
+    crops_map = {}
+    for default_crop in CROPS:
+        crops_map[default_crop] = {
+            "name": default_crop,
+            "quantity_kg": 0.0,
+            "amount_collected": 0.0,
+            "entries_count": 0
+        }
+
+    h_rows = db.execute(
+        "SELECT crop1_name, quantity, amount, crop2_name, crop2_quantity, crop2_amount FROM harvesting"
+    ).fetchall()
+    
+    for r in h_rows:
+        c1 = (r["crop1_name"] or "").strip()
+        if c1:
+            crops_map.setdefault(c1, {"name": c1, "quantity_kg": 0.0, "amount_collected": 0.0, "entries_count": 0})
+            crops_map[c1]["quantity_kg"] += parse_quantity_to_kg(r["quantity"])
+            amt1_nums = re.findall(r"[\d.]+", r["amount"] or "0")
+            if amt1_nums:
+                crops_map[c1]["amount_collected"] += float(amt1_nums[0])
+            crops_map[c1]["entries_count"] += 1
+
+        c2 = (r["crop2_name"] or "").strip()
+        if c2:
+            crops_map.setdefault(c2, {"name": c2, "quantity_kg": 0.0, "amount_collected": 0.0, "entries_count": 0})
+            crops_map[c2]["quantity_kg"] += parse_quantity_to_kg(r["crop2_quantity"])
+            amt2_nums = re.findall(r"[\d.]+", r["crop2_amount"] or "0")
+            if amt2_nums:
+                crops_map[c2]["amount_collected"] += float(amt2_nums[0])
+            crops_map[c2]["entries_count"] += 1
+
+    s_rows = db.execute("SELECT crop_name, seed_amount_kg, price FROM seed_giving").fetchall()
+    for sr in s_rows:
+        sc = (sr["crop_name"] or "").strip()
+        if sc and sc in crops_map:
+            crops_map[sc]["seed_price_collected"] = crops_map.get(sc, {}).get("seed_price_collected", 0.0) + (sr["price"] or 0.0)
+
+    res = list(crops_map.values())
+    for item in res:
+        item["quantity_kg"] = round(item["quantity_kg"], 1)
+        item["amount_collected"] = round(item["amount_collected"], 2)
+    return sorted(res, key=lambda x: (x["quantity_kg"], x["amount_collected"]), reverse=True)
 
 
 def farmer_login_required(f):
@@ -639,6 +693,7 @@ def admin():
         four_days_passed[app_no] = is_past
 
     stats = stats_for(db)
+    crops_summary = get_crops_procurement_summary(db)
     
     return render_template(
         "admin.html", 
@@ -647,7 +702,8 @@ def admin():
         officers=officers,
         verifications=verifications,
         four_days_passed=four_days_passed,
-        stats=stats
+        stats=stats,
+        crops_summary=crops_summary
     )
 
 
@@ -819,7 +875,6 @@ def api_farmer_details(app_no):
         ).fetchall()
     ]
     
-    # Exact calculation: match the number of completed sessions without double counting
     total_sessions_count = max(1, len(past_sessions)) if (past_sessions or (harvesting and harvesting["status"] == "Transferred")) else 0
 
     auto_seed_kg = 50.0
@@ -995,14 +1050,14 @@ def harvest_save():
     )
 
     season_tag = f"Season {session_num}"
-    q1_val = float(re.findall(r"[\d.]+", quantity1)[0]) if re.findall(r"[\d.]+", quantity1) else 15.0
+    q1_val = parse_quantity_to_kg(quantity1) / 100.0 if quantity1 else 15.0
     db.execute(
         "INSERT INTO crop_analytics (farmer_app_no, season, crop, quantity, amount) VALUES (?, ?, ?, ?, ?)",
         (app_no, season_tag, crop1_name, q1_val, amt1_val)
     )
 
     if crop2_name and crop2_quantity:
-        q2_val = float(re.findall(r"[\d.]+", crop2_quantity)[0]) if re.findall(r"[\d.]+", crop2_quantity) else 8.0
+        q2_val = parse_quantity_to_kg(crop2_quantity) / 100.0 if crop2_quantity else 8.0
         db.execute(
             "INSERT INTO crop_analytics (farmer_app_no, season, crop, quantity, amount) VALUES (?, ?, ?, ?, ?)",
             (app_no, season_tag, crop2_name, q2_val, amt2_val)

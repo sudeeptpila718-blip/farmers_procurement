@@ -77,9 +77,10 @@
   .sidebar-nav .nav-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    gap: 10px;
     width: 100%;
-    padding: 12px 16px;
+    padding: 12px 14px;
     border: 1px solid transparent;
     border-radius: 8px;
     background: transparent;
@@ -100,6 +101,19 @@
     background: var(--primary-light);
     color: var(--primary-accent);
     border-color: #bbf7d0;
+  }
+
+  .sidebar-status-tag {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+    white-space: nowrap;
+    line-height: 1.2;
+    margin-left: auto;
   }
 
   .dashboard-content {
@@ -153,24 +167,38 @@
     padding: 12px 14px;
   }
 
-  .charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
-  }
-
-  .chart-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
+  .next-step-box {
+    margin-top: 24px;
     border-radius: 10px;
-    padding: 18px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    padding: 18px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
   }
 
-  .chart-container-inner {
-    position: relative;
-    width: 100%;
-    height: 260px;
+  .next-step-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .next-step-badge {
+    background: #15803d;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .next-step-text {
+    font-size: 14px;
+    color: #166534;
+    line-height: 1.6;
+    margin: 0;
   }
 
   @media (max-width: 860px) {
@@ -242,23 +270,34 @@
     <div class="mini muted" style="padding:4px 12px; font-weight:700;" data-i18n="nav_lifecycle">LIFECYCLE STAGES</div>
     
     <button type="button" class="nav-item active" onclick="showTab('cycle', this)">
-      <span>🔄</span> <span data-i18n="tab_cycle">Farmers Cycle</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>🔄</span> <span data-i18n="tab_cycle">Farmers Cycle</span>
+      </div>
     </button>
 
     <button type="button" class="nav-item" onclick="showTab('status', this)">
-      <span>📌</span> <span data-i18n="tab_status">Application Status</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>📌</span> <span data-i18n="tab_status">Application Status</span>
+      </div>
+      <span class="sidebar-status-tag">{{ farmer['status'] }}</span>
     </button>
 
     <button type="button" class="nav-item" onclick="showTab('slots', this)">
-      <span>🗓️</span> <span data-i18n="tab_slots">Booking Slots</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>🗓️</span> <span data-i18n="tab_slots">Booking Slots</span>
+      </div>
     </button>
 
     <div class="mini muted" style="padding:12px 12px 4px 12px; font-weight:700;" data-i18n="nav_data_docs">DATA &amp; DOCUMENTS</div>
     <button type="button" class="nav-item" onclick="showTab('info', this)">
-      <span>📊</span> <span data-i18n="tab_info">Information</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>📊</span> <span data-i18n="tab_info">Information</span>
+      </div>
     </button>
     <button type="button" class="nav-item" onclick="showTab('application', this)">
-      <span>📄</span> <span data-i18n="tab_app">View Application</span>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span>📄</span> <span data-i18n="tab_app">View Application</span>
+      </div>
     </button>
   </aside>
 
@@ -482,6 +521,34 @@
             {% endfor %}
           </div>
         </div>
+
+        <div class="next-step-box">
+          <div class="next-step-header">
+            <span class="next-step-badge" data-i18n="next_step_badge">Next Action Required</span>
+            <span style="font-weight:700; color:#1e293b; font-size:13px;" data-i18n="next_step_title">What you should do next:</span>
+          </div>
+
+          <p class="next-step-text">
+            {% if farmer['status'] == 'Kishan Seva Kendra' %}
+              <span data-i18n="ns_step_0">📌 Please book your <strong>Land Verification Slot</strong> under the "Booking Slots" menu so Kishan Seva Kendra can assign an officer for field inspection.</span>
+            {% elif farmer['status'] == 'Verification Officer Assigned' %}
+              <span data-i18n="ns_step_1">📋 A Verification Officer is assigned. Please keep your original <strong>Land deeds, Aadhaar document, and Bank Passbook</strong> ready for the scheduled field visit.</span>
+            {% elif farmer['status'] == 'Verified' %}
+              <span data-i18n="ns_step_2">✅ Farmland inspection verified! Proceed to <strong>Farmers Cycle</strong> and submit your <strong>Plowing details</strong> so your file can be transferred to the Procurement Centre.</span>
+            {% elif farmer['status'] == 'Transferred to Procurement' %}
+              <span data-i18n="ns_step_3">⏳ Your file is transferred to the State Procurement Centre. Awaiting receipt verification by the centre desk officer.</span>
+            {% elif farmer['status'] == 'Received by Procurement' %}
+              <span data-i18n="ns_step_4">🌱 Profile received by the Procurement Centre! Go to <strong>Booking Slots</strong> and book your <strong>Subsidized Seed Pickup slot</strong>.</span>
+            {% elif farmer['status'] == 'Seed Distribution Done' %}
+              <span data-i18n="ns_step_5">🌾 Subsidized seeds issued. Cultivate your crops. When ready for harvest intake, book your <strong>Harvesting Intake slot</strong> under Booking Slots.</span>
+            {% elif farmer['status'] == 'Completed' %}
+              <span data-i18n="ns_step_6">🎉 Season harvest and benefit disbursals are completed! Click <strong>"Start New Season Farming"</strong> above to launch your next crop cycle.</span>
+            {% elif farmer['status'] == 'Declined' %}
+              <span data-i18n="ns_step_declined">❌ Application declined at verification. Please visit your nearest Kishan Seva Kendra office with physical documents for clarification.</span>
+            {% endif %}
+          </p>
+        </div>
+
       </div>
     </div>
 
@@ -663,7 +730,7 @@
             <div class="info-row"><span class="k" data-i18n="gender_lbl">Gender</span><span class="v">{{ farmer['gender'] or '—' }}</span></div>
             <div class="info-row"><span class="k" data-i18n="category_lbl">Category</span><span class="v">{{ farmer['category'] or '—' }}</span></div>
             <div class="info-row"><span class="k" data-i18n="kishan_id">Kishan ID</span><span class="v">{{ farmer['kishan_id'] or '—' }}</span></div>
-            <div class="info-row"><span class="k" data-i18n="aadhar_no">Aadhar</span><span class="v">[Aadhaar on File]</span></div>
+            <div class="info-row"><span class="k" data-i18n="aadhar_no">Aadhaar</span><span class="v">[Aadhaar on File]</span></div>
           </div>
 
           <div>
@@ -797,13 +864,15 @@ const translations = {
     sec_app_details: "📄 Your Application",
     cat_personal: "Personal Details",
     cat_land: "Land Details",
-    aadhar_no: "Aadhar",
+    aadhar_no: "Aadhaar",
     has_land: "Has Land",
     land_type: "Type",
     start_new_cycle_title: "🌱 Start Next Crop Cycle (New Season)",
     start_new_cycle_desc: "Your previous harvest is complete! Land verification is retained. Start your next seasonal cultivation right now.",
     btn_start_new_cycle: "Start New Season Farming ➔",
-    stage_lbl: "Stage"
+    stage_lbl: "Stage",
+    next_step_badge: "Next Action Required",
+    next_step_title: "What you should do next:"
   },
   hi: {
     dashboard_title: "किसान पोर्टल",
@@ -912,7 +981,9 @@ const translations = {
     start_new_cycle_title: "🌱 अगला फसल चक्र शुरू करें (नया सीजन)",
     start_new_cycle_desc: "आपकी पिछली फसल पूरी हो चुकी है! भूमि सत्यापन सुरक्षित है। नई मौसमी खेती अभी शुरू करें।",
     btn_start_new_cycle: "नई सीजन खेती शुरू करें ➔",
-    stage_lbl: "चरण"
+    stage_lbl: "चरण",
+    next_step_badge: "अगला आवश्यक कदम",
+    next_step_title: "अब आपको आगे क्या करना चाहिए:"
   },
   bn: {
     dashboard_title: "কৃষক পোর্টাল",
@@ -1021,7 +1092,9 @@ const translations = {
     start_new_cycle_title: "🌱 পরবর্তী ফসল চক্র শুরু করুন (নতুন ঋতু)",
     start_new_cycle_desc: "আপনার পূর্ববর্তী ফসল সম্পন্ন হয়েছে! জমির অনুমোদন সংরক্ষিত রয়েছে। নতুন ঋতুর চাষাবাদ শুরু করুন।",
     btn_start_new_cycle: "নতুন মৌসুমের চাষ শুরু করুন ➔",
-    stage_lbl: "পর্যায়"
+    stage_lbl: "পর্যায়",
+    next_step_badge: "পরবর্তী করণীয়",
+    next_step_title: "আপনার পরবর্তী করণীয় ধাপ:"
   },
   pa: {
     dashboard_title: "ਕਿਸਾਨ ਪੋਰਟਲ",
@@ -1130,7 +1203,9 @@ const translations = {
     start_new_cycle_title: "🌱 ਅਗਲਾ ਫ਼ਸਲੀ ਚੱਕਰ ਸ਼ੁਰੂ ਕਰੋ (ਨਵਾਂ ਸੀਜ਼ਨ)",
     start_new_cycle_desc: "ਪਿਛਲੀ ਫ਼ਸਲ ਪੂਰੀ ਹੋ ਗਈ ਹੈ! ਜ਼ਮੀਨ ਦੀ ਤਸਦੀਕ ਬਰਕਰਾਰ ਹੈ। ਨਵੀਂ ਖੇਤੀ ਸ਼ੁਰੂ ਕਰੋ।",
     btn_start_new_cycle: "ਨਵਾਂ ਸੀਜ਼ਨ ਸ਼ੁਰੂ ਕਰੋ ➔",
-    stage_lbl: "ਪੜਾਅ"
+    stage_lbl: "ਪੜਾਅ",
+    next_step_badge: "ਅਗਲਾ ਲੋੜੀਂਦਾ ਕਦਮ",
+    next_step_title: "ਹੁਣ ਤੁਹਾਨੂੰ ਅੱਗੇ ਕੀ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ:"
   },
   or: {
     dashboard_title: "କୃଷକ ପୋର୍ଟାଲ",
@@ -1239,7 +1314,9 @@ const translations = {
     start_new_cycle_title: "🌱 ପରବର୍ତ୍ତୀ ଫସଲ ଚକ୍ର ଆରମ୍ଭ କରନ୍ତୁ (ନୂଆ ଋତୁ)",
     start_new_cycle_desc: "ପୂର୍ବ ଅମଳ ସରିଛି! ଜମି ଯାଞ୍ଚ ବଳବତ୍ତର ରହିଛି। ନୂଆ ଚାଷ ଆରମ୍ଭ କରନ୍ତୁ।",
     btn_start_new_cycle: "ନୂତନ ଋତୁ ଚାଷ ଆରମ୍ଭ କରନ୍ତୁ ➔",
-    stage_lbl: "ପର୍ଯ୍ୟାୟ"
+    stage_lbl: "ପର୍ଯ୍ୟାୟ",
+    next_step_badge: "ପରବର୍ତ୍ତୀ ଆବଶ୍ୟକ ପଦକ୍ଷେପ",
+    next_step_title: "ବର୍ତ୍ତମାନ ଆପଣଙ୍କୁ ପରବର୍ତ୍ତୀ ପଦକ୍ଷେପ କ’ଣ କରିବା ଉଚିତ:"
   }
 };
 
@@ -1365,6 +1442,9 @@ function showTab(name, btnElement) {
 
   if (btnElement) {
     btnElement.classList.add('active');
+  } else {
+    const navBtn = Array.from(document.querySelectorAll('.sidebar-nav .nav-item')).find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes(name));
+    if (navBtn) navBtn.classList.add('active');
   }
 
   if (name === 'info') {
