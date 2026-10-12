@@ -4,50 +4,232 @@
   <a href="{{ url_for('officer_logout') }}">Logout</a>
 {% endblock %}
 
+{% block extra_head %}
+<style>
+  .farmer-info-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 24px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .info-item {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .info-item .k {
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+  .info-item .v {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 14px;
+  }
+  .correction-box {
+    margin-top: 10px;
+    padding: 12px;
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    border-radius: 6px;
+    display: none;
+  }
+  .doc-preview-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563eb;
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="card" style="max-width:760px;margin:0 auto;">
-  <h2>🔍 Land &amp; Document Verification</h2>
-  <p class="muted mini">Officer: <strong>{{ session['officer_name'] }}</strong> — Farmer: <strong>{{ farmer['name'] }}</strong> (App No. {{ farmer['app_no'] }})</p>
+<div class="card" style="max-width:800px; margin:0 auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:12px; margin-bottom:16px;">
+    <div>
+      <h2 style="margin:0; font-size:20px; color:#1e293b;">🔍 Field Officer Verification Audit</h2>
+      <p class="muted mini" style="margin:2px 0 0 0;">Officer: <strong>{{ session['officer_name'] }}</strong></p>
+    </div>
+    <span class="badge badge-app">App #{{ farmer['app_no'] }}</span>
+  </div>
 
-  {% if existing and existing['verified'] %}
-    <div class="flash flash-success">This farmer has already been fully verified on {{ existing['verified_at'] }}.</div>
-  {% endif %}
+  <!-- Read-Only Farmer Information Profile -->
+  <div class="farmer-info-card">
+    <div style="font-weight:700; font-size:14px; color:#0f172a; border-bottom:1px solid #e2e8f0; padding-bottom:6px; margin-bottom:10px;">
+      👤 Farmer General Information
+    </div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="k">Full Name</div>
+        <div class="v">{{ farmer['name'] }}</div>
+      </div>
+      <div class="info-item">
+        <div class="k">Mobile Number</div>
+        <div class="v">📱 {{ farmer['mobile'] }}</div>
+      </div>
+      <div class="info-item">
+        <div class="k">Gender / Category</div>
+        <div class="v">{{ farmer['gender'] or '—' }} &bull; {{ farmer['category'] or '—' }}</div>
+      </div>
+      <div class="info-item">
+        <div class="k">Kishan ID</div>
+        <div class="v">{{ farmer['kishan_id'] or 'Not provided' }}</div>
+      </div>
+      <div class="info-item">
+        <div class="k">Aadhaar Status</div>
+        <div class="v">[Aadhaar on File]</div>
+      </div>
+      <div class="info-item">
+        <div class="k">Village &amp; Panchayat</div>
+        <div class="v">{{ farmer['village'] }}, {{ farmer['panchayat'] }}</div>
+      </div>
+      <div class="info-item">
+        <div class="k">District &amp; State</div>
+        <div class="v">{{ farmer['district'] }}, {{ farmer['state'] }}</div>
+      </div>
+      <div class="info-item">
+        <div class="k">Land Ownership</div>
+        <div class="v">{{ farmer['has_land'] }} ({{ farmer['land_type'] or 'Own Farming' }})</div>
+      </div>
+    </div>
+  </div>
 
-  <form method="POST" action="{{ url_for('officer_form') }}">
-    {% set checks = [
-      ('name_ok', 'Name', farmer['name']),
-      ('mobile_ok', 'Mobile No.', farmer['mobile']),
-      ('state_ok', 'State', farmer['state']),
-      ('district_ok', 'District', farmer['district']),
-      ('village_ok', 'Village Name', farmer['village']),
-      ('land_ok', 'Land Info', farmer['land_decimal'] ~ ' decimal'),
-      ('aadhar_doc_ok', 'Uploaded Document — Aadhar', farmer['aadhar_doc'] or 'Not uploaded'),
-      ('land_doc_ok', 'Uploaded Document — Land', farmer['land_doc'] or 'Not uploaded'),
-      ('kishan_doc_ok', 'Uploaded Document — Kishan ID', farmer['kishan_doc'] or 'Not uploaded'),
-    ] %}
+  <form method="POST" action="{{ url_for('officer_form') }}" enctype="multipart/form-data">
+    <h3 style="font-size:16px; margin:0 0 14px 0; color:#1e293b;">📋 Verification Checklist &amp; Document Review</h3>
 
-    {% for field, label, value in checks %}
-      <fieldset>
-        <legend>{{ label }}</legend>
-        <p class="mini">{{ value }}</p>
-        <div class="radio-group">
-          <label><input type="radio" name="{{ field }}" value="ok" {% if existing and existing[field] %}checked{% endif %} required> ✅ OK</label>
-          <label><input type="radio" name="{{ field }}" value="decline" {% if existing and not existing[field] and existing[field] is not none %}checked{% endif %}> ❌ Decline</label>
-        </div>
-      </fieldset>
-    {% endfor %}
+    <!-- 1. Land Info Check -->
+    <fieldset style="margin-bottom:16px; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+      <legend style="font-weight:700; font-size:13px; color:#1e293b;">1. Land Information Check</legend>
+      <div style="font-size:14px; margin-bottom:10px;">
+        Registered Area: <strong>{{ farmer['land_decimal'] }} Decimals</strong> ({{ farmer['land_type'] or 'Own Farming' }})
+      </div>
+      
+      <div class="radio-group" style="display:flex; gap:16px;">
+        <label><input type="radio" name="land_ok" value="ok" checked onclick="toggleBox('land_correction_box', false)" required> ✅ OK</label>
+        <label><input type="radio" name="land_ok" value="decline" onclick="toggleBox('land_correction_box', true)"> ❌ Decline (Edit Area)</label>
+      </div>
 
-    <fieldset>
-      <legend>Preferred Crop</legend>
-      <p class="mini">Which crop is suitable for this land?</p>
-      <select name="preference_crop">
-        {% for c in crops %}
-          <option value="{{ c }}" {% if existing and existing['preference_crop']==c %}selected{% endif %}>{{ c }}</option>
-        {% endfor %}
-      </select>
+      <!-- In-line Editable Field -->
+      <div id="land_correction_box" class="correction-box">
+        <label class="mini" style="font-weight:700; color:#92400e;">Corrected Land Area in Decimals *</label>
+        <input type="number" step="0.01" name="corrected_land_decimal" value="{{ farmer['land_decimal'] }}" placeholder="Enter verified decimal area" style="width:100%; margin-top:4px;">
+        <span class="mini muted">This corrected area will update the farmer's record across all dashboards.</span>
+      </div>
     </fieldset>
 
-    <button type="submit" class="btn btn-primary btn-block">Submit Verification</button>
+    <!-- 2. Aadhaar Document Review -->
+    <fieldset style="margin-bottom:16px; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+      <legend style="font-weight:700; font-size:13px; color:#1e293b;">2. Aadhaar Document Review</legend>
+      {% if farmer['aadhar_doc'] %}
+        <a class="doc-preview-link" href="{{ url_for('static', filename='uploads/' ~ farmer['aadhar_doc']) }}" target="_blank">
+          📂 View / Open Aadhaar Document ↗
+        </a>
+      {% else %}
+        <div class="mini muted" style="margin-bottom:8px;">No Aadhaar document uploaded.</div>
+      {% endif %}
+
+      <div class="radio-group" style="display:flex; gap:16px;">
+        <label><input type="radio" name="aadhar_doc_ok" value="ok" checked onclick="toggleBox('aadhar_correction_box', false)" required> ✅ OK</label>
+        <label><input type="radio" name="aadhar_doc_ok" value="decline" onclick="toggleBox('aadhar_correction_box', true)"> ❌ Decline (Re-upload Document)</label>
+      </div>
+
+      <div id="aadhar_correction_box" class="correction-box">
+        <label class="mini" style="font-weight:700; color:#92400e;">Upload Corrected Aadhaar Document (JPG, PNG, PDF)</label>
+        <input type="file" name="corrected_aadhar_doc" style="margin-top:4px; width:100%;">
+      </div>
+    </fieldset>
+
+    <!-- 3. Land Deeds Review -->
+    <fieldset style="margin-bottom:16px; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+      <legend style="font-weight:700; font-size:13px; color:#1e293b;">3. Land Records &amp; Deeds Review</legend>
+      {% if farmer['land_doc'] %}
+        <a class="doc-preview-link" href="{{ url_for('static', filename='uploads/' ~ farmer['land_doc']) }}" target="_blank">
+          📂 View / Open Land Document ↗
+        </a>
+      {% else %}
+        <div class="mini muted" style="margin-bottom:8px;">No Land document uploaded.</div>
+      {% endif %}
+
+      <div class="radio-group" style="display:flex; gap:16px;">
+        <label><input type="radio" name="land_doc_ok" value="ok" checked onclick="toggleBox('land_doc_correction_box', false)" required> ✅ OK</label>
+        <label><input type="radio" name="land_doc_ok" value="decline" onclick="toggleBox('land_doc_correction_box', true)"> ❌ Decline (Re-upload Document)</label>
+      </div>
+
+      <div id="land_doc_correction_box" class="correction-box">
+        <label class="mini" style="font-weight:700; color:#92400e;">Upload Corrected Land Document (JPG, PNG, PDF)</label>
+        <input type="file" name="corrected_land_doc" style="margin-top:4px; width:100%;">
+      </div>
+    </fieldset>
+
+    <!-- 4. Kishan Card Document Review -->
+    <fieldset style="margin-bottom:16px; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+      <legend style="font-weight:700; font-size:13px; color:#1e293b;">4. Kishan Card Document Review</legend>
+      {% if farmer['kishan_doc'] %}
+        <a class="doc-preview-link" href="{{ url_for('static', filename='uploads/' ~ farmer['kishan_doc']) }}" target="_blank">
+          📂 View / Open Kishan Card Document ↗
+        </a>
+      {% else %}
+        <div class="mini muted" style="margin-bottom:8px;">No Kishan Card uploaded.</div>
+      {% endif %}
+
+      <div class="radio-group" style="display:flex; gap:16px;">
+        <label><input type="radio" name="kishan_doc_ok" value="ok" checked onclick="toggleBox('kishan_doc_correction_box', false)" required> ✅ OK</label>
+        <label><input type="radio" name="kishan_doc_ok" value="decline" onclick="toggleBox('kishan_doc_correction_box', true)"> ❌ Decline (Re-upload Document)</label>
+      </div>
+
+      <div id="kishan_doc_correction_box" class="correction-box">
+        <label class="mini" style="font-weight:700; color:#92400e;">Upload Corrected Kishan Card (JPG, PNG, PDF)</label>
+        <input type="file" name="corrected_kishan_doc" style="margin-top:4px; width:100%;">
+      </div>
+    </fieldset>
+
+    <!-- 5. Bank Passbook Review -->
+    <fieldset style="margin-bottom:20px; border:1px solid #cbd5e1; border-radius:8px; padding:16px;">
+      <legend style="font-weight:700; font-size:13px; color:#1e293b;">5. Bank Passbook Document Review</legend>
+      {% if farmer['bank_doc'] %}
+        <a class="doc-preview-link" href="{{ url_for('static', filename='uploads/' ~ farmer['bank_doc']) }}" target="_blank">
+          📂 View / Open Bank Passbook ↗
+        </a>
+      {% else %}
+        <div class="mini muted" style="margin-bottom:8px;">No Bank Passbook uploaded.</div>
+      {% endif %}
+
+      <div class="radio-group" style="display:flex; gap:16px;">
+        <label><input type="radio" name="bank_doc_ok" value="ok" checked onclick="toggleBox('bank_doc_correction_box', false)" required> ✅ OK</label>
+        <label><input type="radio" name="bank_doc_ok" value="decline" onclick="toggleBox('bank_doc_correction_box', true)"> ❌ Decline (Re-upload Document)</label>
+      </div>
+
+      <div id="bank_doc_correction_box" class="correction-box">
+        <label class="mini" style="font-weight:700; color:#92400e;">Upload Corrected Bank Passbook (JPG, PNG, PDF)</label>
+        <input type="file" name="corrected_bank_doc" style="margin-top:4px; width:100%;">
+      </div>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary btn-block" style="padding:12px; font-size:15px; font-weight:700;" onclick="return confirm('Submit verification? Once submitted, this form will be permanently locked and cannot be reopened.');">
+      ✅ Submit Verification
+    </button>
   </form>
 </div>
+
+<script>
+function toggleBox(id, show) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.style.display = show ? 'block' : 'none';
+  }
+}
+</script>
 {% endblock %}
